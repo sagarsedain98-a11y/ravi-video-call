@@ -1,1092 +1,1006 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ravi Video Call</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<title>Ravi Video Call</title>
 
-    body {
-      margin: 0;
-      padding: 20px 10px 30px;
-      font-family: Arial, sans-serif;
-      background: #101828;
-      color: white;
-      text-align: center;
-    }
+<style>
+*{
+  box-sizing:border-box;
+}
 
-    h1 {
-      margin: 10px 0;
-      font-size: 28px;
-    }
+body{
+  margin:0;
+  background:#101828;
+  color:white;
+  font-family:Arial,sans-serif;
+  text-align:center;
+}
 
-    .status {
-      margin: 10px 0 15px;
-      color: #4ade80;
-      font-weight: bold;
-    }
+h1{
+  margin:20px 0 5px;
+}
 
-    .videos {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      padding: 10px;
-    }
+.status{
+  margin:8px;
+  color:#4ade80;
+  font-weight:bold;
+}
 
-    video {
-      width: 100%;
-      max-width: 600px;
-      height: 280px;
-      background: #000;
-      border-radius: 18px;
-      object-fit: cover;
-      margin: auto;
-      border: 2px solid #26334d;
-    }
+.videos{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  padding:15px;
+}
 
-    .controls {
-      padding: 10px;
-    }
+video{
+  width:100%;
+  max-width:600px;
+  height:250px;
+  background:#000;
+  border-radius:18px;
+  object-fit:cover;
+  margin:auto;
+}
 
-    input {
-      width: 90%;
-      max-width: 400px;
-      padding: 16px;
-      border-radius: 12px;
-      border: none;
-      margin: 10px auto;
-      font-size: 17px;
-      display: block;
-    }
+.controls{
+  padding:10px;
+}
 
-    button {
-      padding: 15px 22px;
-      margin: 8px 4px;
-      border: none;
-      border-radius: 12px;
-      font-size: 17px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+button{
+  border:0;
+  border-radius:12px;
+  padding:15px 22px;
+  margin:8px;
+  font-size:17px;
+  font-weight:bold;
+  color:white;
+}
 
-    button:active {
-      transform: scale(0.97);
-    }
+#startBtn{
+  background:#22c55e;
+}
 
-    #startBtn {
-      background: #22c55e;
-      color: white;
-    }
+#joinBtn{
+  background:#3b82f6;
+}
 
-    #joinBtn {
-      background: #3b82f6;
-      color: white;
-    }
+#hangupBtn{
+  background:#ef4444;
+}
 
-    #hangupBtn {
-      background: #ef4444;
-      color: white;
-    }
+input{
+  width:90%;
+  max-width:400px;
+  padding:16px;
+  margin:10px;
+  border:0;
+  border-radius:12px;
+  font-size:17px;
+}
 
-    #roomCode {
-      color: #facc15;
-      font-size: 20px;
-      font-weight: bold;
-      margin: 15px 5px;
-      word-break: break-all;
-    }
+#roomCode{
+  color:#facc15;
+  font-size:20px;
+  font-weight:bold;
+  margin:15px;
+  word-break:break-all;
+}
 
-    .info {
-      font-size: 14px;
-      color: #aab4c5;
-      margin-top: 12px;
-    }
-  </style>
+#connection{
+  margin:10px;
+  color:#60a5fa;
+  font-weight:bold;
+}
+</style>
 </head>
 
 <body>
 
-  <h1>📹 Ravi Video Call</h1>
+<h1>📹 Ravi Video Call</h1>
 
-  <div id="status" class="status">
-    🟢 Ready
-  </div>
+<div class="status" id="status">
+🟢 Ready
+</div>
 
-  <div class="videos">
+<div id="connection">
+Waiting...
+</div>
 
-    <video
-      id="localVideo"
-      autoplay
-      muted
-      playsinline>
-    </video>
+<div class="videos">
 
-    <video
-      id="remoteVideo"
-      autoplay
-      playsinline>
-    </video>
+<video
+id="localVideo"
+autoplay
+muted
+playsinline>
+</video>
 
-  </div>
+<video
+id="remoteVideo"
+autoplay
+playsinline>
+</video>
 
-  <div class="controls">
+</div>
 
-    <button id="startBtn">
-      📞 Create Call
-    </button>
+<div class="controls">
 
-    <div id="roomCode"></div>
+<button id="startBtn">
+📞 Create Call
+</button>
 
-    <input
-      id="roomInput"
-      type="text"
-      placeholder="Enter Room Code"
-      autocomplete="off"
-    >
+<div id="roomCode"></div>
 
-    <button id="joinBtn">
-      📲 Join Call
-    </button>
+<input
+id="roomInput"
+type="text"
+placeholder="Enter Room Code">
 
-    <button id="hangupBtn">
-      ❌ Hang Up
-    </button>
+<br>
 
-    <div class="info">
-      माथिको Room Code अर्को फोनमा राख्नुहोस्।
-    </div>
+<button id="joinBtn">
+📲 Join Call
+</button>
 
-  </div>
+<button id="hangupBtn">
+❌ Hang Up
+</button>
+
+</div>
 
 
 <script type="module">
 
-  /* ================================
-     FIREBASE
-  ================================= */
+/* ================================
+   FIREBASE
+================================ */
 
-  import {
-    initializeApp
-  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
-  import {
-    getFirestore,
-    doc,
-    setDoc,
-    getDoc,
-    updateDoc,
-    collection,
-    addDoc,
-    onSnapshot
-  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-
-
-  const firebaseConfig = {
-
-    apiKey: "AIzaSyBclGWenPPhTCXetZ1rtj1KaRQ9dgvshas",
-
-    authDomain:
-      "ravi-video-call-fa15d.firebaseapp.com",
-
-    projectId:
-      "ravi-video-call-fa15d",
-
-    storageBucket:
-      "ravi-video-call-fa15d.firebasestorage.app",
-
-    messagingSenderId:
-      "1079442344769",
-
-    appId:
-      "1:1079442344769:web:d7812efaf277c3f6d4efc0",
-
-    measurementId:
-      "G-69RY93XC91"
-  };
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  collection,
+  addDoc,
+  onSnapshot
+}
+from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 
-  const app = initializeApp(firebaseConfig);
+const firebaseConfig = {
 
-  const db = getFirestore(app);
+  apiKey:
+  "AIzaSyBclGWenPPhTCXetZ1rtj1KaRQ9dgvshas",
 
+  authDomain:
+  "ravi-video-call-fa15d.firebaseapp.com",
 
-  /* ================================
-     HTML ELEMENTS
-  ================================= */
+  projectId:
+  "ravi-video-call-fa15d",
 
-  const localVideo =
-    document.getElementById("localVideo");
+  storageBucket:
+  "ravi-video-call-fa15d.firebasestorage.app",
 
-  const remoteVideo =
-    document.getElementById("remoteVideo");
+  messagingSenderId:
+  "1079442344769",
 
-  const startBtn =
-    document.getElementById("startBtn");
+  appId:
+  "1:1079442344769:web:d7812efaf277c3f6d4efc0",
 
-  const joinBtn =
-    document.getElementById("joinBtn");
-
-  const hangupBtn =
-    document.getElementById("hangupBtn");
-
-  const roomInput =
-    document.getElementById("roomInput");
-
-  const roomCode =
-    document.getElementById("roomCode");
-
-  const status =
-    document.getElementById("status");
+  measurementId:
+  "G-69RY93XC91"
+};
 
 
-  /* ================================
-     VARIABLES
-  ================================= */
+const app = initializeApp(firebaseConfig);
 
-  let localStream = null;
-
-  let remoteStream = null;
-
-  let peerConnection = null;
-
-  let currentRoom = null;
-
-  let unsubscribeRoom = null;
-
-  let unsubscribeRemoteCandidates = null;
+const db = getFirestore(app);
 
 
-  /* ================================
-     STUN + TURN
-  ================================= */
+/* ================================
+   HTML ELEMENTS
+================================ */
 
-  /*
-    TURN is important when two phones
-    cannot connect directly.
+const localVideo =
+document.getElementById("localVideo");
 
-    Open Relay provides TURN service.
-  */
+const remoteVideo =
+document.getElementById("remoteVideo");
 
-  const servers = {
+const startBtn =
+document.getElementById("startBtn");
 
-    iceServers: [
+const joinBtn =
+document.getElementById("joinBtn");
 
-      /* Google STUN */
+const hangupBtn =
+document.getElementById("hangupBtn");
 
-      {
-        urls: "stun:stun.l.google.com:19302"
-      },
+const roomInput =
+document.getElementById("roomInput");
 
-      /* Metered/Open Relay STUN */
+const roomCode =
+document.getElementById("roomCode");
 
-      {
-        urls: "stun:stun.relay.metered.ca:80"
-      },
+const statusText =
+document.getElementById("status");
 
-      /* TURN UDP */
-
-      {
-        urls: "turn:openrelay.metered.ca:80",
-        username: "openrelayproject",
-        credential: "openrelayproject"
-      },
-
-      /* TURN TCP */
-
-      {
-        urls: "turn:openrelay.metered.ca:80?transport=tcp",
-        username: "openrelayproject",
-        credential: "openrelayproject"
-      },
-
-      /* TURN 443 */
-
-      {
-        urls: "turn:openrelay.metered.ca:443",
-        username: "openrelayproject",
-        credential: "openrelayproject"
-      },
-
-      /* TURN TLS */
-
-      {
-        urls: "turns:openrelay.metered.ca:443?transport=tcp",
-        username: "openrelayproject",
-        credential: "openrelayproject"
-      }
-
-    ],
-
-    iceCandidatePoolSize: 10
-  };
+const connectionText =
+document.getElementById("connection");
 
 
-  /* ================================
-     STATUS
-  ================================= */
+/* ================================
+   VARIABLES
+================================ */
 
-  function setStatus(text, color = "#4ade80") {
+let localStream = null;
 
-    status.innerText = text;
+let remoteStream = null;
 
-    status.style.color = color;
-  }
+let peerConnection = null;
+
+let currentRoom = null;
+
+let pendingCandidates = [];
+
+let remoteDescriptionSet = false;
 
 
-  /* ================================
-     START CAMERA
-  ================================= */
+/* ================================
+   STUN + TURN SERVERS
+================================ */
 
-  async function startCamera() {
+const servers = {
 
-    if (localStream) {
-      return;
+  iceServers: [
+
+    /* STUN */
+
+    {
+      urls:
+      "stun:openrelay.metered.ca:80"
+    },
+
+
+    /* TURN UDP */
+
+    {
+      urls:
+      "turn:openrelay.metered.ca:80",
+
+      username:
+      "openrelayproject",
+
+      credential:
+      "openrelayproject"
+    },
+
+
+    /* TURN TCP */
+
+    {
+      urls:
+      "turn:openrelay.metered.ca:443",
+
+      username:
+      "openrelayproject",
+
+      credential:
+      "openrelayproject"
+    },
+
+
+    /* TURN TCP forced */
+
+    {
+      urls:
+      "turn:openrelay.metered.ca:443?transport=tcp",
+
+      username:
+      "openrelayproject",
+
+      credential:
+      "openrelayproject"
     }
 
-    setStatus(
-      "📷 Camera/Microphone खोल्दै...",
-      "#facc15"
+  ],
+
+  iceCandidatePoolSize:10
+};
+
+
+/* ================================
+   ADD ICE CANDIDATE SAFELY
+================================ */
+
+async function addCandidateSafely(candidate){
+
+  try{
+
+    if(
+      peerConnection &&
+      remoteDescriptionSet
+    ){
+
+      await peerConnection.addIceCandidate(
+        new RTCIceCandidate(candidate)
+      );
+
+    }else{
+
+      pendingCandidates.push(candidate);
+
+    }
+
+  }catch(error){
+
+    console.error(
+      "ICE candidate error:",
+      error
     );
 
-    localStream =
-      await navigator.mediaDevices.getUserMedia({
+  }
 
-        video: {
-          facingMode: "user",
-          width: {
-            ideal: 1280
-          },
-          height: {
-            ideal: 720
-          }
-        },
-
-        audio: true
-
-      });
+}
 
 
-    localVideo.srcObject = localStream;
+/* ================================
+   PROCESS WAITING CANDIDATES
+================================ */
 
+async function processPendingCandidates(){
 
-    try {
-      await localVideo.play();
-    } catch (e) {
-      console.log("Local video play:", e);
+  if(!peerConnection){
+    return;
+  }
+
+  for(
+    const candidate
+    of pendingCandidates
+  ){
+
+    try{
+
+      await peerConnection.addIceCandidate(
+        new RTCIceCandidate(candidate)
+      );
+
+    }catch(error){
+
+      console.error(
+        "Pending ICE error:",
+        error
+      );
+
     }
 
+  }
 
-    remoteStream = new MediaStream();
+  pendingCandidates = [];
 
-    remoteVideo.srcObject =
-      remoteStream;
-
-
-    peerConnection =
-      new RTCPeerConnection(servers);
+}
 
 
-    /* Add local tracks */
+/* ================================
+   CAMERA + MICROPHONE
+================================ */
 
-    localStream.getTracks().forEach(track => {
+async function startCamera(){
 
-      peerConnection.addTrack(
-        track,
-        localStream
+  statusText.innerText =
+  "🟡 Opening camera...";
+
+
+  localStream =
+  await navigator.mediaDevices.getUserMedia({
+
+    video:true,
+
+    audio:true
+
+  });
+
+
+  localVideo.srcObject =
+  localStream;
+
+
+  remoteStream =
+  new MediaStream();
+
+
+  remoteVideo.srcObject =
+  remoteStream;
+
+
+  peerConnection =
+  new RTCPeerConnection(
+    servers
+  );
+
+
+  /* ADD LOCAL TRACKS */
+
+  localStream
+  .getTracks()
+  .forEach(track=>{
+
+    peerConnection.addTrack(
+      track,
+      localStream
+    );
+
+  });
+
+
+  /* RECEIVE REMOTE TRACKS */
+
+  peerConnection.ontrack =
+  event=>{
+
+    console.log(
+      "Remote track received"
+    );
+
+
+    event.streams[0]
+    .getTracks()
+    .forEach(track=>{
+
+      remoteStream.addTrack(
+        track
       );
 
     });
 
 
-    /* Receive remote tracks */
-
-    peerConnection.ontrack = event => {
-
-      console.log(
-        "REMOTE TRACK RECEIVED",
-        event.track.kind
-      );
+    remoteVideo.srcObject =
+    remoteStream;
 
 
-      event.streams[0]
-        .getTracks()
-        .forEach(track => {
+    statusText.innerText =
+    "🟢 Video Connected";
 
-          if (
-            !remoteStream
-              .getTracks()
-              .some(t => t.id === track.id)
-          ) {
-
-            remoteStream.addTrack(track);
-
-          }
-
-        });
+  };
 
 
-      remoteVideo.srcObject =
-        remoteStream;
+  /* CONNECTION STATUS */
+
+  peerConnection.onconnectionstatechange =
+  ()=>{
+
+    console.log(
+      "Connection:",
+      peerConnection.connectionState
+    );
 
 
-      remoteVideo.play()
-        .catch(error => {
-
-          console.log(
-            "Remote video play error:",
-            error
-          );
-
-        });
+    connectionText.innerText =
+    "Connection: " +
+    peerConnection.connectionState;
 
 
-      setStatus(
-        "🟢 Video Connected",
-        "#4ade80"
-      );
+    if(
+      peerConnection.connectionState
+      === "connected"
+    ){
+
+      statusText.innerText =
+      "🟢 Call Connected";
+
+    }
+
+
+    if(
+      peerConnection.connectionState
+      === "connecting"
+    ){
+
+      statusText.innerText =
+      "🟡 Connecting...";
+
+    }
+
+
+    if(
+      peerConnection.connectionState
+      === "failed"
+    ){
+
+      statusText.innerText =
+      "🔴 Connection Failed";
+
+    }
+
+  };
+
+
+  /* ICE STATUS */
+
+  peerConnection.oniceconnectionstatechange =
+  ()=>{
+
+    console.log(
+      "ICE:",
+      peerConnection.iceConnectionState
+    );
+
+    connectionText.innerText =
+    "ICE: " +
+    peerConnection.iceConnectionState;
+
+  };
+
+}
+
+
+/* ================================
+   CREATE CALL
+================================ */
+
+startBtn.onclick =
+async()=>{
+
+  try{
+
+    pendingCandidates = [];
+
+    remoteDescriptionSet = false;
+
+
+    await startCamera();
+
+
+    statusText.innerText =
+    "🟡 Creating call...";
+
+
+    /* CREATE FIREBASE ROOM */
+
+    const roomRef =
+    doc(
+      collection(
+        db,
+        "rooms"
+      )
+    );
+
+
+    currentRoom =
+    roomRef.id;
+
+
+    const callerCandidates =
+    collection(
+      roomRef,
+      "callerCandidates"
+    );
+
+
+    const calleeCandidates =
+    collection(
+      roomRef,
+      "calleeCandidates"
+    );
+
+
+    /* SEND CALLER ICE */
+
+    peerConnection.onicecandidate =
+    async event=>{
+
+      if(event.candidate){
+
+        await addDoc(
+          callerCandidates,
+          event.candidate.toJSON()
+        );
+
+      }
 
     };
 
 
-    /* ICE state */
+    /* CREATE OFFER */
 
-    peerConnection.oniceconnectionstatechange =
-      () => {
+    const offer =
+    await peerConnection.createOffer();
 
-        console.log(
-          "ICE:",
-          peerConnection.iceConnectionState
+
+    await peerConnection.setLocalDescription(
+      offer
+    );
+
+
+    /* SAVE OFFER */
+
+    await setDoc(
+      roomRef,
+      {
+
+        offer:{
+          type:offer.type,
+          sdp:offer.sdp
+        },
+
+        createdAt:
+        Date.now()
+
+      }
+    );
+
+
+    roomCode.innerText =
+    "Room Code: " +
+    currentRoom;
+
+
+    /* WATCH ANSWER */
+
+    onSnapshot(
+      roomRef,
+      async snapshot=>{
+
+        const data =
+        snapshot.data();
+
+
+        if(
+          data &&
+          data.answer &&
+          !remoteDescriptionSet
+        ){
+
+          console.log(
+            "Answer received"
+          );
+
+
+          await peerConnection
+          .setRemoteDescription(
+
+            new RTCSessionDescription(
+              data.answer
+            )
+
+          );
+
+
+          remoteDescriptionSet =
+          true;
+
+
+          await processPendingCandidates();
+
+        }
+
+      }
+    );
+
+
+    /* WATCH CALLEE ICE */
+
+    onSnapshot(
+      calleeCandidates,
+      snapshot=>{
+
+        snapshot
+        .docChanges()
+        .forEach(change=>{
+
+          if(
+            change.type === "added"
+          ){
+
+            addCandidateSafely(
+              change.doc.data()
+            );
+
+          }
+
+        });
+
+      }
+    );
+
+
+    statusText.innerText =
+    "🟢 Call Created";
+
+
+    alert(
+      "Call created! Send the Room Code to the other phone."
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+
+    statusText.innerText =
+    "🔴 Error";
+
+
+    alert(
+      "Camera/Microphone error:\n" +
+      error.message
+    );
+
+  }
+
+};
+
+
+/* ================================
+   JOIN CALL
+================================ */
+
+joinBtn.onclick =
+async()=>{
+
+  try{
+
+    pendingCandidates = [];
+
+    remoteDescriptionSet = false;
+
+
+    const code =
+    roomInput.value.trim();
+
+
+    if(!code){
+
+      alert(
+        "Room Code राख्नुहोस्"
+      );
+
+      return;
+
+    }
+
+
+    statusText.innerText =
+    "🟡 Joining...";
+
+
+    await startCamera();
+
+
+    currentRoom =
+    code;
+
+
+    const roomRef =
+    doc(
+      db,
+      "rooms",
+      code
+    );
+
+
+    const roomSnapshot =
+    await getDoc(
+      roomRef
+    );
+
+
+    if(
+      !roomSnapshot.exists()
+    ){
+
+      alert(
+        "Room भेटिएन"
+      );
+
+      return;
+
+    }
+
+
+    const roomData =
+    roomSnapshot.data();
+
+
+    const calleeCandidates =
+    collection(
+      roomRef,
+      "calleeCandidates"
+    );
+
+
+    const callerCandidates =
+    collection(
+      roomRef,
+      "callerCandidates"
+    );
+
+
+    /* SEND CALLEE ICE */
+
+    peerConnection.onicecandidate =
+    async event=>{
+
+      if(event.candidate){
+
+        await addDoc(
+          calleeCandidates,
+          event.candidate.toJSON()
         );
 
+      }
 
-        const state =
-          peerConnection.iceConnectionState;
+    };
 
 
-        if (state === "checking") {
+    /* SET OFFER */
 
-          setStatus(
-            "🔄 Connecting...",
-            "#facc15"
-          );
+    await peerConnection
+    .setRemoteDescription(
 
+      new RTCSessionDescription(
+        roomData.offer
+      )
+
+    );
+
+
+    remoteDescriptionSet =
+    true;
+
+
+    await processPendingCandidates();
+
+
+    /* CREATE ANSWER */
+
+    const answer =
+    await peerConnection.createAnswer();
+
+
+    await peerConnection.setLocalDescription(
+      answer
+    );
+
+
+    /* SAVE ANSWER */
+
+    await updateDoc(
+      roomRef,
+      {
+
+        answer:{
+          type:answer.type,
+          sdp:answer.sdp
         }
 
-        if (state === "connected" ||
-            state === "completed") {
-
-          setStatus(
-            "🟢 Video Connected",
-            "#4ade80"
-          );
-
-        }
-
-        if (state === "failed") {
-
-          setStatus(
-            "🔴 Connection Failed",
-            "#ef4444"
-          );
-
-        }
-
-        if (state === "disconnected") {
-
-          setStatus(
-            "🟠 Disconnected",
-            "#f97316"
-          );
-
-        }
-
-      };
+      }
+    );
 
 
-    /* Peer connection state */
+    /* RECEIVE CALLER ICE */
 
-    peerConnection.onconnectionstatechange =
-      () => {
+    onSnapshot(
+      callerCandidates,
+      snapshot=>{
 
-        console.log(
-          "Connection:",
-          peerConnection.connectionState
-        );
+        snapshot
+        .docChanges()
+        .forEach(change=>{
 
-      };
+          if(
+            change.type === "added"
+          ){
+
+            addCandidateSafely(
+              change.doc.data()
+            );
+
+          }
+
+        });
+
+      }
+    );
+
+
+    roomCode.innerText =
+    "Room Code: " +
+    currentRoom;
+
+
+    statusText.innerText =
+    "🟡 Waiting for video...";
+
+
+    alert(
+      "Joined the call!"
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+
+    statusText.innerText =
+    "🔴 Join Error";
+
+
+    alert(
+      "Join error:\n" +
+      error.message
+    );
+
+  }
+
+};
+
+
+/* ================================
+   HANG UP
+================================ */
+
+hangupBtn.onclick =
+()=>{
+
+  if(localStream){
+
+    localStream
+    .getTracks()
+    .forEach(track=>{
+      track.stop();
+    });
 
   }
 
 
-  /* ================================
-     CREATE CALL
-  ================================= */
+  if(peerConnection){
 
-  startBtn.onclick = async () => {
+    peerConnection.close();
 
-    try {
+  }
 
-      await startCamera();
 
+  localStream = null;
 
-      setStatus(
-        "📞 Creating call...",
-        "#facc15"
-      );
+  remoteStream = null;
 
+  peerConnection = null;
 
-      /* Create Firebase room */
+  currentRoom = null;
 
-      const roomRef =
-        doc(collection(db, "rooms"));
+  pendingCandidates = [];
 
+  remoteDescriptionSet = false;
 
-      currentRoom =
-        roomRef.id;
 
+  localVideo.srcObject =
+  null;
 
-      const callerCandidates =
-        collection(
-          roomRef,
-          "callerCandidates"
-        );
+  remoteVideo.srcObject =
+  null;
 
 
-      const calleeCandidates =
-        collection(
-          roomRef,
-          "calleeCandidates"
-        );
+  roomCode.innerText =
+  "";
 
+  connectionText.innerText =
+  "Disconnected";
 
-      /* Caller ICE */
+  statusText.innerText =
+  "🔴 Call Ended";
 
-      peerConnection.onicecandidate =
-        async event => {
-
-          if (event.candidate) {
-
-            try {
-
-              await addDoc(
-                callerCandidates,
-                event.candidate.toJSON()
-              );
-
-            } catch (error) {
-
-              console.error(
-                "Caller ICE error:",
-                error
-              );
-
-            }
-
-          }
-
-        };
-
-
-      /* Create offer */
-
-      const offer =
-        await peerConnection.createOffer({
-
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: true
-
-        });
-
-
-      await peerConnection.setLocalDescription(
-        offer
-      );
-
-
-      /* Save offer */
-
-      await setDoc(
-        roomRef,
-        {
-
-          offer: {
-
-            type: offer.type,
-
-            sdp: offer.sdp
-
-          }
-
-        }
-      );
-
-
-      /* Show room */
-
-      roomCode.innerText =
-        "Room Code: " + currentRoom;
-
-
-      roomInput.value =
-        currentRoom;
-
-
-      setStatus(
-        "🟡 Waiting for other phone...",
-        "#facc15"
-      );
-
-
-      /* Listen for answer */
-
-      unsubscribeRoom =
-        onSnapshot(
-          roomRef,
-          async snapshot => {
-
-            const data =
-              snapshot.data();
-
-
-            if (
-              data &&
-              data.answer &&
-              !peerConnection
-                .currentRemoteDescription
-            ) {
-
-              console.log(
-                "ANSWER RECEIVED"
-              );
-
-
-              const answer =
-                new RTCSessionDescription(
-                  data.answer
-                );
-
-
-              await peerConnection
-                .setRemoteDescription(
-                  answer
-                );
-
-
-              setStatus(
-                "🔄 Connecting video...",
-                "#facc15"
-              );
-
-            }
-
-          }
-        );
-
-
-      /* Receive callee ICE */
-
-      unsubscribeRemoteCandidates =
-        onSnapshot(
-          calleeCandidates,
-          snapshot => {
-
-            snapshot.docChanges()
-              .forEach(async change => {
-
-                if (
-                  change.type === "added"
-                ) {
-
-                  try {
-
-                    const candidate =
-                      change.doc.data();
-
-
-                    await peerConnection
-                      .addIceCandidate(
-                        new RTCIceCandidate(
-                          candidate
-                        )
-                      );
-
-
-                    console.log(
-                      "Callee ICE added"
-                    );
-
-                  } catch (error) {
-
-                    console.error(
-                      "Add callee ICE:",
-                      error
-                    );
-
-                  }
-
-                }
-
-              });
-
-          }
-        );
-
-
-      alert(
-        "Call created!\n\nRoom Code:\n" +
-        currentRoom +
-        "\n\nयो code अर्को फोनमा राख्नुहोस्।"
-      );
-
-
-    } catch (error) {
-
-      console.error(error);
-
-
-      setStatus(
-        "🔴 Camera/Microphone Error",
-        "#ef4444"
-      );
-
-
-      alert(
-        "Camera/Microphone error:\n" +
-        error.message
-      );
-
-    }
-
-  };
-
-
-  /* ================================
-     JOIN CALL
-  ================================= */
-
-  joinBtn.onclick = async () => {
-
-    try {
-
-      const code =
-        roomInput.value.trim();
-
-
-      if (!code) {
-
-        alert(
-          "Room Code राख्नुहोस्।"
-        );
-
-        return;
-
-      }
-
-
-      await startCamera();
-
-
-      setStatus(
-        "🔍 Room खोज्दै...",
-        "#facc15"
-      );
-
-
-      currentRoom =
-        code;
-
-
-      const roomRef =
-        doc(db, "rooms", code);
-
-
-      const roomSnapshot =
-        await getDoc(roomRef);
-
-
-      if (!roomSnapshot.exists()) {
-
-        setStatus(
-          "🔴 Room भेटिएन",
-          "#ef4444"
-        );
-
-
-        alert(
-          "Room भेटिएन।\nRoom Code सही छ कि जाँच गर्नुहोस्।"
-        );
-
-
-        return;
-
-      }
-
-
-      const roomData =
-        roomSnapshot.data();
-
-
-      if (!roomData.offer) {
-
-        alert(
-          "यो room मा Call offer छैन।"
-        );
-
-        return;
-
-      }
-
-
-      const callerCandidates =
-        collection(
-          roomRef,
-          "callerCandidates"
-        );
-
-
-      const calleeCandidates =
-        collection(
-          roomRef,
-          "calleeCandidates"
-        );
-
-
-      /* Callee ICE */
-
-      peerConnection.onicecandidate =
-        async event => {
-
-          if (event.candidate) {
-
-            try {
-
-              await addDoc(
-                calleeCandidates,
-                event.candidate.toJSON()
-              );
-
-            } catch (error) {
-
-              console.error(
-                "Callee ICE error:",
-                error
-              );
-
-            }
-
-          }
-
-        };
-
-
-      /* Set caller offer */
-
-      await peerConnection
-        .setRemoteDescription(
-          new RTCSessionDescription(
-            roomData.offer
-          )
-        );
-
-
-      /* Create answer */
-
-      const answer =
-        await peerConnection.createAnswer({
-
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: true
-
-        });
-
-
-      await peerConnection
-        .setLocalDescription(
-          answer
-        );
-
-
-      /* Save answer */
-
-      await updateDoc(
-        roomRef,
-        {
-
-          answer: {
-
-            type: answer.type,
-
-            sdp: answer.sdp
-
-          }
-
-        }
-      );
-
-
-      setStatus(
-        "🔄 Connecting video...",
-        "#facc15"
-      );
-
-
-      /* Receive caller ICE */
-
-      unsubscribeRemoteCandidates =
-        onSnapshot(
-          callerCandidates,
-          snapshot => {
-
-            snapshot.docChanges()
-              .forEach(async change => {
-
-                if (
-                  change.type === "added"
-                ) {
-
-                  try {
-
-                    const candidate =
-                      change.doc.data();
-
-
-                    await peerConnection
-                      .addIceCandidate(
-                        new RTCIceCandidate(
-                          candidate
-                        )
-                      );
-
-
-                    console.log(
-                      "Caller ICE added"
-                    );
-
-                  } catch (error) {
-
-                    console.error(
-                      "Add caller ICE:",
-                      error
-                    );
-
-                  }
-
-                }
-
-              });
-
-          }
-        );
-
-
-      alert(
-        "Joined the call!"
-      );
-
-
-    } catch (error) {
-
-      console.error(error);
-
-
-      setStatus(
-        "🔴 Join Error",
-        "#ef4444"
-      );
-
-
-      alert(
-        "Join error:\n" +
-        error.message
-      );
-
-    }
-
-  };
-
-
-  /* ================================
-     HANG UP
-  ================================= */
-
-  hangupBtn.onclick = () => {
-
-
-    if (unsubscribeRoom) {
-
-      unsubscribeRoom();
-
-      unsubscribeRoom = null;
-
-    }
-
-
-    if (unsubscribeRemoteCandidates) {
-
-      unsubscribeRemoteCandidates();
-
-      unsubscribeRemoteCandidates = null;
-
-    }
-
-
-    if (localStream) {
-
-      localStream
-        .getTracks()
-        .forEach(track => {
-
-          track.stop();
-
-        });
-
-      localStream = null;
-
-    }
-
-
-    if (peerConnection) {
-
-      peerConnection.close();
-
-      peerConnection = null;
-
-    }
-
-
-    localVideo.srcObject = null;
-
-    remoteVideo.srcObject = null;
-
-    remoteStream = null;
-
-    currentRoom = null;
-
-
-    roomCode.innerText = "";
-
-    roomInput.value = "";
-
-
-    setStatus(
-      "🟢 Ready",
-      "#4ade80"
-    );
-
-  };
-
-
-  /* ================================
-     FIREBASE READY
-  ================================= */
-
-  console.log(
-    "Firebase connected!"
-  );
+};
 
 </script>
 

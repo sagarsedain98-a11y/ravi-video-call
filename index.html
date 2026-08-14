@@ -1,1 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ravi Video Call</title>
 
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #101820;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 20px 0 10px;
+    }
+
+    .box {
+      padding: 15px;
+    }
+
+    input {
+      width: 90%;
+      padding: 14px;
+      margin: 8px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 13px 20px;
+      margin: 6px;
+      border: none;
+      border-radius: 10px;
+      background: #20c05c;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    button.red {
+      background: #e53935;
+    }
+
+    video {
+      width: 92%;
+      max-width: 500px;
+      background: black;
+      border-radius: 15px;
+      margin: 10px;
+    }
+
+    #status {
+      margin: 15px;
+      color: #8ee8a8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>📹 Ravi Video Call</h1>
+
+  <div class="box">
+
+    <p>Your Call ID:</p>
+    <input id="myId" readonly>
+
+    <button onclick="copyId()">Copy Call ID</button>
+
+    <hr>
+
+    <p>Enter friend's Call ID:</p>
+
+    <input id="friendId" placeholder="Friend's Call ID">
+
+    <br>
+
+    <button onclick="startCall()">📞 Start Video Call</button>
+    <button class="red" onclick="endCall()">❌ End Call</button>
+
+    <p id="status">Connecting...</p>
+
+    <h3>Your Camera</h3>
+    <video id="myVideo" autoplay muted playsinline></video>
+
+    <h3>Friend's Camera</h3>
+    <video id="friendVideo" autoplay playsinline></video>
+
+  </div>
+
+<script>
+
+let peer;
+let localStream;
+let currentCall;
+
+async function startCamera() {
+
+  try {
+
+    localStream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    });
+
+    document.getElementById("myVideo").srcObject = localStream;
+
+    document.getElementById("status").innerText =
+      "Camera ready. Share your Call ID with your friend.";
+
+  } catch (error) {
+
+    document.getElementById("status").

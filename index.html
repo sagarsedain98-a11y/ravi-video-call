@@ -1,219 +1,629 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Ravi Video Call</title>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 
 <style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#0d1820;
-  color:white;
-  text-align:center;
-  padding:20px;
+* {
+  box-sizing: border-box;
 }
-h1{font-size:38px}
-.box{
-  background:white;
-  color:#222;
-  padding:15px;
-  border-radius:15px;
-  width:90%;
-  max-width:500px;
-  margin:15px auto;
-  font-size:20px;
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0d1820;
+  color: white;
+  text-align: center;
 }
-input{
-  width:90%;
-  padding:18px;
-  border:0;
-  border-radius:15px;
-  font-size:18px;
-  margin:10px;
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
 }
-button{
-  padding:16px 25px;
-  border:0;
-  border-radius:15px;
-  font-size:19px;
-  font-weight:bold;
-  margin:8px;
-  background:#20c55a;
-  color:white;
+
+h1 {
+  font-size: 38px;
+  margin: 15px 0 25px;
 }
-.end{background:#ef3b3b}
-video{
-  width:95%;
-  max-width:500px;
-  background:black;
-  border-radius:15px;
-  margin:10px;
+
+h2 {
+  margin-top: 25px;
 }
-#status{
-  color:#7cffaa;
-  font-size:20px;
-  margin:15px;
+
+label {
+  display: block;
+  font-size: 20px;
+  margin: 15px 0 8px;
+}
+
+input {
+  width: 95%;
+  padding: 18px;
+  border: none;
+  border-radius: 18px;
+  font-size: 18px;
+  outline: none;
+}
+
+button {
+  border: none;
+  border-radius: 16px;
+  padding: 15px 22px;
+  margin: 10px 5px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.green {
+  background: #20c763;
+  color: white;
+}
+
+.red {
+  background: #ef3d3d;
+  color: white;
+}
+
+.gray {
+  background: #555;
+  color: white;
+}
+
+.idBox {
+  background: white;
+  color: #222;
+  padding: 18px;
+  border-radius: 18px;
+  font-size: 18px;
+  word-break: break-all;
+  min-height: 58px;
+}
+
+#status {
+  margin: 20px 0;
+  color: #70f5a0;
+  font-size: 20px;
+  min-height: 28px;
+}
+
+.videoBox {
+  width: 100%;
+  margin-top: 15px;
+  background: black;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+video {
+  width: 100%;
+  display: block;
+  background: black;
+  min-height: 220px;
+  object-fit: cover;
+}
+
+.controls {
+  margin-top: 10px;
+}
+
+hr {
+  margin: 25px 0;
+}
+
+#incoming {
+  display: none;
+  background: #222;
+  padding: 15px;
+  border-radius: 18px;
+  margin-top: 15px;
 }
 </style>
 </head>
 
 <body>
 
+<div class="container">
+
 <h1>📹 Ravi Video Call</h1>
 
-<div>Your Call ID:</div>
-<div class="box" id="myId">Connecting...</div>
+<label>Your Call ID:</label>
 
-<button onclick="copyId()">Copy Call ID</button>
+<div id="myId" class="idBox">
+  Loading...
+</div>
+
+<button class="green" onclick="copyMyId()">
+  📋 Copy Call ID
+</button>
 
 <hr>
 
-<div>Enter friend's Call ID:</div>
+<label>Enter Friend's Call ID:</label>
 
-<input id="friendId" placeholder="Friend's Call ID">
+<input
+  id="friendId"
+  type="text"
+  placeholder="Friend's Call ID"
+/>
 
 <br>
 
-<button onclick="startCall()">📞 Start Video Call</button>
-<button class="end" onclick="endCall()">❌ End Call</button>
+<button class="green" onclick="startCall()">
+  📞 Start Video Call
+</button>
 
-<div id="status">Starting...</div>
+<button class="red" onclick="endCall()">
+  ❌ End Call
+</button>
 
-<h2>Your Camera</h2>
-<video id="localVideo" autoplay muted playsinline></video>
+<div id="incoming">
 
-<h2>Friend's Camera</h2>
-<video id="remoteVideo" autoplay playsinline></video>
+  <h3>📞 Incoming Video Call</h3>
+
+  <button class="green" onclick="answerCall()">
+    ✅ Accept
+  </button>
+
+  <button class="red" onclick="rejectCall()">
+    ❌ Reject
+  </button>
+
+</div>
+
+<div id="status">
+  Starting camera...
+</div>
+
+<h2>📷 Your Camera</h2>
+
+<div class="videoBox">
+  <video id="localVideo" autoplay muted playsinline></video>
+</div>
+
+<h2>👤 Friend's Camera</h2>
+
+<div class="videoBox">
+  <video id="remoteVideo" autoplay playsinline></video>
+</div>
+
+<div class="controls">
+
+  <button class="gray" onclick="toggleCamera()">
+    📷 Camera On/Off
+  </button>
+
+  <button class="gray" onclick="toggleMic()">
+    🎤 Mic On/Off
+  </button>
+
+</div>
+
+</div>
 
 <script>
 
 let peer;
-let localStream;
-let currentCall;
+let localStream = null;
+let currentCall = null;
+let incomingCall = null;
 
-async function startCamera(){
 
-  try{
+/* =========================
+   START CAMERA
+========================= */
+
+async function startCamera() {
+
+  try {
 
     localStream = await navigator.mediaDevices.getUserMedia({
-      video:true,
-      audio:true
+      video: true,
+      audio: true
     });
 
     document.getElementById("localVideo").srcObject = localStream;
 
-    document.getElementById("status").innerText =
-      "Camera ready. Your Call ID is loading...";
+    setStatus("Camera ready ✅");
 
     createPeer();
 
-  }catch(error){
+  } catch (error) {
 
-    document.getElementById("status").innerText =
-      "Camera/Microphone permission Allow गर्नुहोस्.";
+    console.error(error);
 
-    alert("Camera र Microphone permission Allow गर्नुहोस्।");
+    setStatus(
+      "Camera/Microphone permission दिनुहोस् ❌"
+    );
+
   }
+
 }
 
-function createPeer(){
+
+/* =========================
+   CREATE PEER
+========================= */
+
+function createPeer() {
 
   peer = new Peer();
 
-  peer.on("open", function(id){
+  peer.on("open", function(id) {
 
     document.getElementById("myId").innerText = id;
 
-    document.getElementById("status").innerText =
-      "Ready! अब Call ID share गर्नुहोस्।";
+    setStatus(
+      "Ready! अब Call ID share गर्नुहोस् ✅"
+    );
+
   });
 
-  peer.on("call", function(call){
 
-    currentCall = call;
+  /* INCOMING CALL */
 
-    call.answer(localStream);
+  peer.on("call", function(call) {
 
-    call.on("stream", function(remoteStream){
+    incomingCall = call;
 
-      document.getElementById("remoteVideo").srcObject =
-        remoteStream;
+    document.getElementById("incoming").style.display = "block";
 
-      document.getElementById("status").innerText =
-        "📞 Video Call Connected!";
-    });
+    setStatus(
+      "📞 Incoming call आएको छ!"
+    );
+
   });
 
-  peer.on("error", function(error){
 
-    document.getElementById("status").innerText =
-      "Connection error: " + error.type;
+  peer.on("error", function(error) {
+
+    console.error(error);
+
+    setStatus(
+      "Connection error: " + error.type
+    );
+
   });
+
 }
 
-function startCall(){
 
-  let friendId =
+/* =========================
+   START OUTGOING CALL
+========================= */
+
+function startCall() {
+
+  const friendId =
     document.getElementById("friendId").value.trim();
 
-  if(!friendId){
-    alert("Friend's Call ID हाल्नुहोस्।");
+  if (!friendId) {
+
+    alert("Friend's Call ID राख्नुहोस्।");
+
     return;
+
   }
 
-  if(!localStream){
+  if (!localStream) {
+
     alert("Camera सुरु भएको छैन।");
+
     return;
+
   }
 
-  currentCall = peer.call(friendId, localStream);
+  if (!peer) {
 
-  document.getElementById("status").innerText =
-    "Calling...";
+    alert("Connecting... केही सेकेन्ड पर्खनुहोस्।");
 
-  currentCall.on("stream", function(remoteStream){
+    return;
+
+  }
+
+
+  setStatus("📞 Calling...");
+
+
+  const call = peer.call(
+    friendId,
+    localStream
+  );
+
+  currentCall = call;
+
+
+  call.on("stream", function(remoteStream) {
 
     document.getElementById("remoteVideo").srcObject =
       remoteStream;
 
-    document.getElementById("status").innerText =
-      "📞 Video Call Connected!";
+    setStatus("🟢 Video Call Connected");
+
   });
+
+
+  call.on("close", function() {
+
+    setStatus("Call ended.");
+
+    clearRemoteVideo();
+
+  });
+
+
+  call.on("error", function(error) {
+
+    console.error(error);
+
+    setStatus(
+      "Call error: " + error.type
+    );
+
+  });
+
 }
 
-function copyId(){
 
-  let id = document.getElementById("myId").innerText;
+/* =========================
+   ACCEPT INCOMING CALL
+========================= */
 
-  if(id && id !== "Connecting..."){
+function answerCall() {
 
-    navigator.clipboard.writeText(id);
+  if (!incomingCall) return;
 
-    alert("Call ID copied!");
+  if (!localStream) {
+
+    alert("Camera सुरु भएको छैन।");
+
+    return;
+
   }
+
+
+  document.getElementById("incoming").style.display =
+    "none";
+
+  setStatus("Connecting...");
+
+
+  incomingCall.answer(localStream);
+
+  currentCall = incomingCall;
+
+
+  incomingCall.on("stream", function(remoteStream) {
+
+    document.getElementById("remoteVideo").srcObject =
+      remoteStream;
+
+    setStatus("🟢 Video Call Connected");
+
+  });
+
+
+  incomingCall.on("close", function() {
+
+    setStatus("Call ended.");
+
+    clearRemoteVideo();
+
+  });
+
+
+  incomingCall.on("error", function(error) {
+
+    console.error(error);
+
+    setStatus(
+      "Call error: " + error.type
+    );
+
+  });
+
+
+  incomingCall = null;
+
 }
 
-function endCall(){
 
-  if(currentCall){
+/* =========================
+   REJECT CALL
+========================= */
+
+function rejectCall() {
+
+  if (incomingCall) {
+
+    incomingCall.close();
+
+    incomingCall = null;
+
+  }
+
+  document.getElementById("incoming").style.display =
+    "none";
+
+  setStatus("Call rejected.");
+
+}
+
+
+/* =========================
+   END CALL
+========================= */
+
+function endCall() {
+
+  if (currentCall) {
+
     currentCall.close();
+
+    currentCall = null;
+
   }
 
-  document.getElementById("remoteVideo").srcObject = null;
+  if (incomingCall) {
+
+    incomingCall.close();
+
+    incomingCall = null;
+
+  }
+
+  clearRemoteVideo();
+
+  document.getElementById("incoming").style.display =
+    "none";
+
+  setStatus("Call ended ❌");
+
+}
+
+
+/* =========================
+   CAMERA ON/OFF
+========================= */
+
+function toggleCamera() {
+
+  if (!localStream) return;
+
+  const track =
+    localStream.getVideoTracks()[0];
+
+  if (track) {
+
+    track.enabled = !track.enabled;
+
+    if (track.enabled) {
+
+      setStatus("📷 Camera ON");
+
+    } else {
+
+      setStatus("📷 Camera OFF");
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   MIC ON/OFF
+========================= */
+
+function toggleMic() {
+
+  if (!localStream) return;
+
+  const track =
+    localStream.getAudioTracks()[0];
+
+  if (track) {
+
+    track.enabled = !track.enabled;
+
+    if (track.enabled) {
+
+      setStatus("🎤 Microphone ON");
+
+    } else {
+
+      setStatus("🔇 Microphone OFF");
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   COPY CALL ID
+========================= */
+
+function copyMyId() {
+
+  const id =
+    document.getElementById("myId").innerText;
+
+  if (
+    !id ||
+    id === "Loading..."
+  ) {
+
+    alert("Call ID अझै आएको छैन।");
+
+    return;
+
+  }
+
+
+  navigator.clipboard.writeText(id)
+    .then(function() {
+
+      alert(
+        "Call ID copied ✅\nअब साथीलाई पठाउनुहोस्।"
+      );
+
+    })
+    .catch(function() {
+
+      alert(
+        "Call ID copy गर्न सकिएन। Manually copy गर्नुहोस्।"
+      );
+
+    });
+
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+function setStatus(text) {
 
   document.getElementById("status").innerText =
-    "Call ended.";
+    text;
+
 }
 
-startCamera();
+
+/* =========================
+   CLEAR REMOTE VIDEO
+========================= */
+
+function clearRemoteVideo() {
+
+  const video =
+    document.getElementById("remoteVideo");
+
+  video.srcObject = null;
+
+}
+
+
+/* =========================
+   START APP
+========================= */
+
+window.addEventListener(
+  "load",
+  startCamera
+);
 
 </script>
 
 </body>
-  </html>
+</html>

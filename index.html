@@ -1,13 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ravi Video Call</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #101828;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 25px 0 10px;
+    }
+
+    .status {
+      color: #4ade80;
+      margin-bottom: 20px;
+    }
+
+    .videos {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding: 15px;
+    }
+
+    video {
+      width: 100%;
+      max-width: 600px;
+      height: 250px;
+      background: #000;
+      border-radius: 15px;
+      object-fit: cover;
+      margin: auto;
+    }
+
+    .controls {
+      padding: 15px;
+    }
+
+    input {
+      width: 90%;
+      max-width: 350px;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      margin: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 14px 22px;
+      margin: 8px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #startBtn {
+      background: #22c55e;
+      color: white;
+    }
+
+    #joinBtn {
+      background: #3b82f6;
+      color: white;
+    }
+
+    #hangupBtn {
+      background: #ef4444;
+      color: white;
+    }
+
+    #roomCode {
+      color: #facc15;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>📹 Ravi Video Call</h1>
+
+  <div class="status">🟢 Ready</div>
+
+  <div class="videos">
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video>
+  </div>
+
+  <div class="controls">
+
+    <button id="startBtn">📞 Create Call</button>
+
+    <div id="roomCode"></div>
+
+    <input
+      id="roomInput"
+      type="text"
+      placeholder="Enter Room Code"
+    >
+
+    <br>
+
+    <button id="joinBtn">📲 Join Call</button>
+
+    <button id="hangupBtn">❌ Hang Up</button>
+
+  </div>
+
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
   import {
     getFirestore,
     doc,
     setDoc,
-    onSnapshot,
+    getDoc,
+    updateDoc,
     collection,
-    addDoc
+    addDoc,
+    onSnapshot
   } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
 
   const firebaseConfig = {
     apiKey: "AIzaSyBclGWenPPhTCXetZ1rtj1KaRQ9dgvshas",
@@ -22,5 +153,296 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  console.log("Firebase connected!");
+
+  const localVideo = document.getElementById("localVideo");
+  const remoteVideo = document.getElementById("remoteVideo");
+
+  const startBtn = document.getElementById("startBtn");
+  const joinBtn = document.getElementById("joinBtn");
+  const hangupBtn = document.getElementById("hangupBtn");
+
+  const roomInput = document.getElementById("roomInput");
+  const roomCode = document.getElementById("roomCode");
+
+
+  let localStream;
+  let remoteStream;
+  let peerConnection;
+  let currentRoom;
+
+
+  const servers = {
+    iceServers: [
+      {
+        urls: "stun:stun.l.google.com:19302"
+      }
+    ]
+  };
+
+
+  async function startCamera() {
+
+    localStream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    });
+
+    localVideo.srcObject = localStream;
+
+    remoteStream = new MediaStream();
+    remoteVideo.srcObject = remoteStream;
+
+    peerConnection = new RTCPeerConnection(servers);
+
+    localStream.getTracks().forEach(track => {
+      peerConnection.addTrack(track, localStream);
+    });
+
+    peerConnection.ontrack = event => {
+
+      event.streams[0].getTracks().forEach(track => {
+        remoteStream.addTrack(track);
+      });
+
+    };
+  }
+
+
+  startBtn.onclick = async () => {
+
+    try {
+
+      await startCamera();
+
+      const roomRef = doc(collection(db, "rooms"));
+
+      currentRoom = roomRef.id;
+
+      const callerCandidates =
+        collection(roomRef, "callerCandidates");
+
+      const calleeCandidates =
+        collection(roomRef, "calleeCandidates");
+
+
+      peerConnection.onicecandidate = async event => {
+
+        if (event.candidate) {
+
+          await addDoc(
+            callerCandidates,
+            event.candidate.toJSON()
+          );
+
+        }
+
+      };
+
+
+      const offer =
+        await peerConnection.createOffer();
+
+      await peerConnection.setLocalDescription(offer);
+
+
+      await setDoc(roomRef, {
+        offer: {
+          type: offer.type,
+          sdp: offer.sdp
+        }
+      });
+
+
+      roomCode.innerText =
+        "Room Code: " + currentRoom;
+
+
+      onSnapshot(roomRef, async snapshot => {
+
+        const data = snapshot.data();
+
+        if (
+          !peerConnection.currentRemoteDescription &&
+          data &&
+          data.answer
+        ) {
+
+          const answer = data.answer;
+
+          await peerConnection.setRemoteDescription(
+            new RTCSessionDescription(answer)
+          );
+
+        }
+
+      });
+
+
+      onSnapshot(
+        calleeCandidates,
+        snapshot => {
+
+          snapshot.docChanges().forEach(change => {
+
+            if (change.type === "added") {
+
+              const candidate = change.doc.data();
+
+              peerConnection.addIceCandidate(
+                new RTCIceCandidate(candidate)
+              );
+
+            }
+
+          });
+
+        }
+      );
+
+
+      alert("Call created! Send the Room Code to the other phone.");
+
+    } catch (error) {
+
+      alert("Camera/Microphone error: " + error.message);
+
+    }
+
+  };
+
+
+  joinBtn.onclick = async () => {
+
+    try {
+
+      const code = roomInput.value.trim();
+
+      if (!code) {
+        alert("Room Code राख्नुहोस्");
+        return;
+      }
+
+
+      await startCamera();
+
+
+      currentRoom = code;
+
+      const roomRef = doc(db, "rooms", code);
+
+      const roomSnapshot =
+        await getDoc(roomRef);
+
+
+      if (!roomSnapshot.exists()) {
+
+        alert("Room भेटिएन");
+
+        return;
+      }
+
+
+      const roomData = roomSnapshot.data();
+
+
+      const calleeCandidates =
+        collection(roomRef, "calleeCandidates");
+
+
+      peerConnection.onicecandidate =
+        async event => {
+
+          if (event.candidate) {
+
+            await addDoc(
+              calleeCandidates,
+              event.candidate.toJSON()
+            );
+
+          }
+
+        };
+
+
+      await peerConnection.setRemoteDescription(
+        new RTCSessionDescription(roomData.offer)
+      );
+
+
+      const answer =
+        await peerConnection.createAnswer();
+
+
+      await peerConnection.setLocalDescription(answer);
+
+
+      await updateDoc(roomRef, {
+        answer: {
+          type: answer.type,
+          sdp: answer.sdp
+        }
+      });
+
+
+      const callerCandidates =
+        collection(roomRef, "callerCandidates");
+
+
+      onSnapshot(
+        callerCandidates,
+        snapshot => {
+
+          snapshot.docChanges().forEach(change => {
+
+            if (change.type === "added") {
+
+              const candidate = change.doc.data();
+
+              peerConnection.addIceCandidate(
+                new RTCIceCandidate(candidate)
+              );
+
+            }
+
+          });
+
+        }
+      );
+
+
+      alert("Joined the call!");
+
+    } catch (error) {
+
+      alert("Join error: " + error.message);
+
+    }
+
+  };
+
+
+  hangupBtn.onclick = () => {
+
+    if (localStream) {
+
+      localStream.getTracks().forEach(
+        track => track.stop()
+      );
+
+    }
+
+    if (peerConnection) {
+      peerConnection.close();
+    }
+
+    localVideo.srcObject = null;
+    remoteVideo.srcObject = null;
+
+    roomCode.innerText = "";
+
+  };
+
 </script>
+
+</body>
+</html>

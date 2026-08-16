@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
 <title>Ravi Chat</title>
 
 <style>
+
 *{
   box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
 }
 
 html,
@@ -16,26 +19,21 @@ body{
   margin:0;
   width:100%;
   height:100%;
-  background:#000;
+  background:#050505;
   color:#fff;
   font-family:Arial,sans-serif;
   overflow:hidden;
 }
 
-body{
-  touch-action:manipulation;
-}
-
 #app{
   position:relative;
   width:100%;
-  height:100dvh;
-  min-height:100vh;
+  height:100%;
   background:#000;
-  overflow:hidden;
 }
 
 video{
+  position:absolute;
   background:#111;
   object-fit:cover;
 }
@@ -45,8 +43,8 @@ video{
   inset:0;
   width:100%;
   height:100%;
-  z-index:1;
   background:#050505;
+  object-fit:cover;
 }
 
 #localVideo{
@@ -57,7 +55,7 @@ video{
   height:155px;
   border:2px solid #fff;
   border-radius:15px;
-  z-index:8;
+  z-index:5;
   background:#111;
   object-fit:cover;
 }
@@ -67,29 +65,24 @@ video{
   top:0;
   left:0;
   right:0;
-  z-index:10;
-  padding:16px 14px;
-  padding-top:max(16px, env(safe-area-inset-top));
+  z-index:20;
+  padding:17px 14px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  background:linear-gradient(#000e,transparent);
-  pointer-events:none;
+  background:linear-gradient(#000f,transparent);
 }
 
 .logo{
   font-size:20px;
   font-weight:bold;
-  text-shadow:0 2px 5px #000;
 }
 
 #status{
-  padding:9px 14px;
-  border-radius:22px;
+  padding:8px 14px;
+  border-radius:20px;
   background:#475569;
   font-size:13px;
-  font-weight:bold;
-  box-shadow:0 2px 8px #0008;
 }
 
 .bottom{
@@ -97,18 +90,15 @@ video{
   left:0;
   right:0;
   bottom:0;
-  z-index:10;
+  z-index:20;
   text-align:center;
   padding:18px 10px 28px;
-  padding-bottom:max(28px, env(safe-area-inset-bottom));
-  background:linear-gradient(transparent,#000f 35%,#000);
+  background:linear-gradient(transparent,#000f);
 }
 
 #message{
   margin-bottom:14px;
-  font-size:16px;
-  min-height:22px;
-  text-shadow:0 2px 5px #000;
+  font-size:15px;
 }
 
 .buttons{
@@ -127,9 +117,6 @@ button{
   padding:13px 18px;
   border-radius:25px;
   cursor:pointer;
-  -webkit-user-select:none;
-  user-select:none;
-  box-shadow:0 3px 10px #0008;
 }
 
 button:disabled{
@@ -164,10 +151,10 @@ button:disabled{
 #giftBox{
   display:none;
   position:absolute;
-  bottom:115px;
+  bottom:105px;
   left:50%;
   transform:translateX(-50%);
-  z-index:30;
+  z-index:50;
   width:280px;
   padding:15px;
   border-radius:20px;
@@ -195,9 +182,8 @@ button:disabled{
   user-select:none;
 }
 
-.gift:active{
-  background:#555;
-  transform:scale(.95);
+.gift:hover{
+  background:#444;
 }
 
 #giftAnimation{
@@ -206,68 +192,36 @@ button:disabled{
   top:40%;
   left:50%;
   transform:translate(-50%,-50%);
-  z-index:50;
+  z-index:100;
   font-size:90px;
   animation:pop .8s ease;
   pointer-events:none;
 }
 
-#permissionBox{
+#connecting{
   display:none;
   position:absolute;
-  left:50%;
   top:50%;
+  left:50%;
   transform:translate(-50%,-50%);
-  width:calc(100% - 40px);
-  max-width:360px;
-  z-index:100;
-  background:#181818;
-  border:1px solid #444;
-  border-radius:20px;
-  padding:22px;
+  z-index:15;
   text-align:center;
-  box-shadow:0 15px 50px #000;
-}
-
-#permissionBox h3{
-  margin:0 0 10px;
-}
-
-#permissionBox p{
-  color:#ccc;
-  line-height:1.5;
-  font-size:14px;
-}
-
-#permissionBtn{
-  background:#16a34a;
-  margin-top:8px;
-}
-
-#connectingOverlay{
-  display:none;
-  position:absolute;
-  inset:0;
-  z-index:6;
   pointer-events:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  gap:10px;
 }
 
-#connectingOverlay .spinner{
-  width:42px;
-  height:42px;
-  border:4px solid #555;
-  border-top-color:#fff;
+.spinner{
+  width:78px;
+  height:78px;
+  border:7px solid #444;
+  border-top:7px solid #fff;
   border-radius:50%;
   animation:spin 1s linear infinite;
+  margin:auto;
 }
 
-#connectingOverlay span{
-  font-size:15px;
-  color:#ddd;
+.connectText{
+  margin-top:18px;
+  font-size:18px;
 }
 
 @keyframes spin{
@@ -277,15 +231,19 @@ button:disabled{
 }
 
 @keyframes pop{
+
   0%{
     transform:translate(-50%,-50%) scale(.2);
   }
+
   70%{
     transform:translate(-50%,-50%) scale(1.3);
   }
+
   100%{
     transform:translate(-50%,-50%) scale(1);
   }
+
 }
 
 @media(max-width:500px){
@@ -316,10 +274,8 @@ button:disabled{
     height:48px;
   }
 
-  #message{
-    font-size:15px;
-  }
 }
+
 </style>
 </head>
 
@@ -334,6 +290,7 @@ button:disabled{
     playsinline>
   </video>
 
+
   <!-- LOCAL VIDEO -->
   <video
     id="localVideo"
@@ -342,26 +299,22 @@ button:disabled{
     playsinline>
   </video>
 
-  <!-- CONNECTING OVERLAY -->
-  <div id="connectingOverlay">
+
+  <!-- CONNECTING -->
+  <div id="connecting">
+
     <div class="spinner"></div>
-    <span>Connecting video...</span>
+
+    <div class="connectText">
+      Connecting video...
+    </div>
+
   </div>
+
 
   <!-- GIFT ANIMATION -->
   <div id="giftAnimation"></div>
 
-  <!-- PERMISSION MESSAGE -->
-  <div id="permissionBox">
-    <h3>📷 Camera & Microphone</h3>
-    <p>
-      Ravi Chat needs camera and microphone permission
-      to make the video call.
-    </p>
-    <button id="permissionBtn">
-      Allow Camera & Mic
-    </button>
-  </div>
 
   <!-- TOP -->
   <div class="top">
@@ -375,6 +328,7 @@ button:disabled{
     </div>
 
   </div>
+
 
   <!-- GIFT BOX -->
   <div id="giftBox">
@@ -397,7 +351,8 @@ button:disabled{
 
   </div>
 
-  <!-- CONTROLS -->
+
+  <!-- BOTTOM -->
   <div class="bottom">
 
     <div id="message">
@@ -448,7 +403,7 @@ button:disabled{
 
 
 <!-- =====================================================
-     METERED VIDEO SDK
+     METERED SDK
 ===================================================== -->
 
 <script src="https://cdn.metered.ca/sdk/video/1.4.6/sdk.min.js"></script>
@@ -506,6 +461,7 @@ const firebaseConfig = {
 
   measurementId:
     "G-69RY93XC91"
+
 };
 
 
@@ -517,34 +473,29 @@ const db =
 
 
 /* =====================================================
-   CONFIG
+   METERED CONFIG
 ===================================================== */
 
 /*
    IMPORTANT:
 
-   This is your Vercel backend endpoint.
-   Your Metered secret key is NEVER placed here.
-*/
+   This MUST match your Metered application domain.
 
-const CREATE_ROOM_API =
-  "/api/create-room";
+   Your Vercel API uses:
+   METERED_DOMAIN
 
+   Example:
 
-/*
-   IMPORTANT:
-
-   This must be your Metered application domain.
-
-   Your previous code used:
+   METERED_DOMAIN =
    ravi-video-call.metered.live
-
-   Keep this exactly the same if that is your
-   Metered application domain.
 */
 
 const METERED_DOMAIN =
   "ravi-video-call.metered.live";
+
+
+const CREATE_ROOM_API =
+  "/api/create-room";
 
 
 /* =====================================================
@@ -552,103 +503,107 @@ const METERED_DOMAIN =
 ===================================================== */
 
 const localVideo =
-  document.getElementById("localVideo");
+  document.getElementById(
+    "localVideo"
+  );
 
 const remoteVideo =
-  document.getElementById("remoteVideo");
+  document.getElementById(
+    "remoteVideo"
+  );
 
 const startBtn =
-  document.getElementById("startBtn");
+  document.getElementById(
+    "startBtn"
+  );
 
 const nextBtn =
-  document.getElementById("nextBtn");
+  document.getElementById(
+    "nextBtn"
+  );
 
 const endBtn =
-  document.getElementById("endBtn");
+  document.getElementById(
+    "endBtn"
+  );
 
 const muteBtn =
-  document.getElementById("muteBtn");
+  document.getElementById(
+    "muteBtn"
+  );
 
 const cameraBtn =
-  document.getElementById("cameraBtn");
+  document.getElementById(
+    "cameraBtn"
+  );
 
 const giftBtn =
-  document.getElementById("giftBtn");
+  document.getElementById(
+    "giftBtn"
+  );
 
 const giftBox =
-  document.getElementById("giftBox");
+  document.getElementById(
+    "giftBox"
+  );
 
 const giftAnimation =
-  document.getElementById("giftAnimation");
+  document.getElementById(
+    "giftAnimation"
+  );
 
 const statusEl =
-  document.getElementById("status");
+  document.getElementById(
+    "status"
+  );
 
 const messageEl =
-  document.getElementById("message");
+  document.getElementById(
+    "message"
+  );
 
-const permissionBox =
-  document.getElementById("permissionBox");
-
-const permissionBtn =
-  document.getElementById("permissionBtn");
-
-const connectingOverlay =
-  document.getElementById("connectingOverlay");
+const connectingEl =
+  document.getElementById(
+    "connecting"
+  );
 
 
 /* =====================================================
-   USER STATE
+   STATE
 ===================================================== */
 
-/*
-   Every browser gets its own unique ID.
+const userId =
+  crypto.randomUUID();
 
-   localStorage keeps the same ID when the page
-   reloads on the same phone.
-*/
+let meeting =
+  null;
 
-let userId =
-  localStorage.getItem(
-    "raviChatUserId"
-  );
+let queueListener =
+  null;
 
-if(!userId){
+let giftListener =
+  null;
 
-  userId =
-    crypto.randomUUID();
+let currentRoom =
+  null;
 
-  localStorage.setItem(
-    "raviChatUserId",
-    userId
-  );
+let currentPartner =
+  null;
 
-}
+let localStream =
+  null;
 
+let remoteStream =
+  null;
 
-let meeting = null;
+let muted =
+  false;
 
-let queueListener = null;
+let cameraOff =
+  false;
 
-let giftListener = null;
-
-let currentRoom = null;
-
-let currentPartner = null;
-
-let localStream = null;
-
-let remoteStream = null;
-
-let muted = false;
-
-let cameraOff = false;
-
-let busy = false;
-
-let connecting = false;
-
-let connectionTimer = null;
+let busy =
+  false;
 
 
 /* =====================================================
@@ -659,6 +614,7 @@ function setStatus(text){
 
   statusEl.innerText =
     text;
+
 
   if(
     text.includes("Connected") ||
@@ -678,21 +634,13 @@ function setStatus(text){
       "#f59e0b";
 
   }
-  else if(
-    text.includes("Error") ||
-    text.includes("Offline")
-  ){
-
-    statusEl.style.background =
-      "#475569";
-
-  }
   else{
 
     statusEl.style.background =
       "#475569";
 
   }
+
 }
 
 
@@ -706,8 +654,8 @@ function setMessage(text){
 
 function showConnecting(show){
 
-  connectingOverlay.style.display =
-    show ? "flex" : "none";
+  connectingEl.style.display =
+    show ? "block" : "none";
 
 }
 
@@ -733,68 +681,7 @@ function enableCallButtons(enabled){
 
 
 /* =====================================================
-   CAMERA/MIC PERMISSION CHECK
-===================================================== */
-
-async function checkMediaPermission(){
-
-  if(
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia
-  ){
-
-    throw new Error(
-      "Camera/Microphone is not available. Please use HTTPS."
-    );
-
-  }
-
-
-  try{
-
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
-        video:true,
-        audio:true
-      });
-
-
-    /*
-       Stop this temporary stream.
-       Metered will request/use the camera again
-       when startVideo/startAudio is called.
-    */
-
-    stream
-      .getTracks()
-      .forEach(
-        track =>
-          track.stop()
-      );
-
-
-    return true;
-
-  }
-  catch(error){
-
-    console.error(
-      "Permission error:",
-      error
-    );
-
-    permissionBox.style.display =
-      "block";
-
-    throw error;
-
-  }
-
-}
-
-
-/* =====================================================
-   FIREBASE QUEUE
+   ENTER QUEUE
 ===================================================== */
 
 async function enterQueue(){
@@ -833,35 +720,6 @@ async function enterQueue(){
 
 
 /* =====================================================
-   REMOVE QUEUE
-===================================================== */
-
-async function removeFromQueue(){
-
-  try{
-
-    await deleteDoc(
-      doc(
-        db,
-        "matchQueue",
-        userId
-      )
-    );
-
-  }
-  catch(error){
-
-    console.log(
-      "Queue remove:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =====================================================
    FIND PARTNER
 ===================================================== */
 
@@ -880,7 +738,7 @@ async function findPartner(){
         "waiting"
       ),
 
-      limit(20)
+      limit(10)
     );
 
 
@@ -893,15 +751,11 @@ async function findPartner(){
     of snapshot.docs
   ){
 
-    const candidateData =
-      candidate.data();
-
     const partnerId =
-      candidateData.userId;
+      candidate.data().userId;
 
 
     if(
-      !partnerId ||
       partnerId === userId
     ){
 
@@ -917,6 +771,7 @@ async function findPartner(){
         userId
       );
 
+
     const partnerRef =
       doc(
         db,
@@ -925,25 +780,16 @@ async function findPartner(){
       );
 
 
-    /*
-       Room ID is generated once by the user
-       who successfully wins the transaction.
-    */
-
     const roomId =
       "ravi-" +
       crypto.randomUUID()
-        .replaceAll("-","")
+        .replaceAll("-", "")
         .substring(0,12);
-
-
-    let matched =
-      false;
 
 
     try{
 
-      matched =
+      const success =
         await runTransaction(
           db,
           async(transaction)=>{
@@ -978,10 +824,17 @@ async function findPartner(){
 
             if(
               meData.state !==
-                "waiting" ||
+              "waiting"
+            ){
 
+              return false;
+
+            }
+
+
+            if(
               partnerData.state !==
-                "waiting"
+              "waiting"
             ){
 
               return false;
@@ -1028,6 +881,19 @@ async function findPartner(){
           }
         );
 
+
+      if(success){
+
+        currentRoom =
+          roomId;
+
+        currentPartner =
+          partnerId;
+
+        return true;
+
+      }
+
     }
     catch(error){
 
@@ -1035,21 +901,6 @@ async function findPartner(){
         "Match transaction:",
         error
       );
-
-      continue;
-
-    }
-
-
-    if(matched){
-
-      currentRoom =
-        roomId;
-
-      currentPartner =
-        partnerId;
-
-      return true;
 
     }
 
@@ -1062,7 +913,7 @@ async function findPartner(){
 
 
 /* =====================================================
-   FIREBASE MATCH LISTENER
+   LISTEN FOR MATCH
 ===================================================== */
 
 function listenForMatch(){
@@ -1102,60 +953,55 @@ function listenForMatch(){
 
 
         if(
-          data.state !== "matched" ||
-          !data.roomId
-        ){
-
-          return;
-
-        }
-
-
-        /*
-           Ignore duplicate snapshots.
-        */
-
-        if(
-          connecting &&
-          currentRoom ===
-            data.roomId
-        ){
-
-          return;
-
-        }
-
-
-        if(
-          meeting &&
-          currentRoom ===
-            data.roomId
-        ){
-
-          return;
-
-        }
-
-
-        currentRoom =
-          data.roomId;
-
-        currentPartner =
-          data.partner || null;
-
-
-        setStatus(
-          "Connecting..."
-        );
-
-        setMessage(
-          "🎉 Partner found! Connecting..."
-        );
-
-
-        await connectMetered(
+          data.state ===
+            "matched" &&
           data.roomId
-        );
+        ){
+
+          if(
+            meeting &&
+            currentRoom ===
+              data.roomId
+          ){
+
+            return;
+
+          }
+
+
+          currentRoom =
+            data.roomId;
+
+          currentPartner =
+            data.partner;
+
+
+          console.log(
+            "MATCH FOUND:",
+            data
+          );
+
+
+          setStatus(
+            "Connecting..."
+          );
+
+
+          setMessage(
+            "🎉 Partner found! Connecting..."
+          );
+
+
+          showConnecting(
+            true
+          );
+
+
+          await connectMetered(
+            data.roomId
+          );
+
+        }
 
       },
 
@@ -1164,14 +1010,6 @@ function listenForMatch(){
         console.error(
           "Queue listener error:",
           error
-        );
-
-        setStatus(
-          "Offline"
-        );
-
-        setMessage(
-          "❌ Firebase connection error"
         );
 
       }
@@ -1197,9 +1035,6 @@ async function createMeteredRoom(roomId){
 
         headers:{
           "Content-Type":
-            "application/json",
-
-          "Accept":
             "application/json"
         },
 
@@ -1219,59 +1054,47 @@ async function createMeteredRoom(roomId){
     await response.text();
 
 
-  let data;
+  let data = {};
 
 
   try{
 
     data =
-      JSON.parse(text);
+      text
+        ? JSON.parse(text)
+        : {};
 
   }
   catch{
 
     data = {
-      raw:text
+      raw:
+        text
     };
 
   }
 
 
-  /*
-     409 / already exists is okay.
+  console.log(
+    "Create room response:",
+    response.status,
+    data
+  );
 
-     Your create-room.js is already designed
-     to return success:true for this case.
-  */
 
   if(
-    response.ok
+    !response.ok
   ){
 
-    return data;
+    throw new Error(
+      data.error ||
+      "Metered room creation failed"
+    );
 
   }
 
 
-  const details =
-    data?.details
-      ? JSON.stringify(
-          data.details
-        )
-      : "";
-
-
-  throw new Error(
-    (
-      data?.error ||
-      "Metered room creation failed"
-    ) +
-    (
-      details
-        ? "\n" + details
-        : ""
-    )
-  );
+  return data;
 
 }
 
@@ -1292,50 +1115,48 @@ function handleLocalTrack(item){
   }
 
 
-  console.log(
-    "LOCAL TRACK:",
-    item.type,
-    item.track
-  );
-
-
-  /*
-     We only need video for the local
-     video element.
-  */
-
   if(
-    item.type === "video"
+    !localStream
   ){
 
-    const stream =
-      new MediaStream([
-        item.track
-      ]);
-
-
     localStream =
-      stream;
-
-
-    localVideo.srcObject =
-      stream;
-
-
-    localVideo.muted =
-      true;
-
-
-    localVideo.play()
-      .catch(
-        error =>
-          console.log(
-            "Local play:",
-            error
-          )
-      );
+      new MediaStream();
 
   }
+
+
+  const exists =
+    localStream
+      .getTracks()
+      .some(
+        track =>
+          track.id ===
+          item.track.id
+      );
+
+
+  if(!exists){
+
+    localStream.addTrack(
+      item.track
+    );
+
+  }
+
+
+  localVideo.srcObject =
+    localStream;
+
+
+  localVideo
+    .play()
+    .catch(
+      error =>
+        console.log(
+          "Local video:",
+          error
+        )
+    );
 
 }
 
@@ -1356,13 +1177,6 @@ function handleRemoteTrack(item){
   }
 
 
-  console.log(
-    "REMOTE TRACK:",
-    item.type,
-    item
-  );
-
-
   if(
     !remoteStream
   ){
@@ -1372,10 +1186,6 @@ function handleRemoteTrack(item){
 
   }
 
-
-  /*
-     Do not add duplicate track.
-  */
 
   const exists =
     remoteStream
@@ -1400,151 +1210,50 @@ function handleRemoteTrack(item){
     remoteStream;
 
 
-  remoteVideo.autoplay =
-    true;
-
-  remoteVideo.playsInline =
-    true;
-
-
-  remoteVideo.play()
+  remoteVideo
+    .play()
     .catch(
       error =>
         console.log(
-          "Remote play:",
+          "Remote video:",
           error
         )
     );
 
 
-  /*
-     Only video track means we have
-     actual remote video.
-  */
-
-  if(
-    item.type === "video"
-  ){
-
-    showConnecting(
-      false
-    );
-
-
-    setStatus(
-      "🟢 Connected"
-    );
-
-
-    setMessage(
-      "🎥 Video chat connected"
-    );
-
-
-    enableCallButtons(
-      true
-    );
-
-
-    stopConnectionTimer();
-
-  }
-
-}
-
-
-/* =====================================================
-   CONNECTION TIMEOUT
-===================================================== */
-
-function startConnectionTimer(){
-
-  stopConnectionTimer();
-
-
-  connectionTimer =
-    setTimeout(
-      ()=>{
-
-        if(
-          meeting &&
-          !remoteStream
-        ){
-
-          console.log(
-            "Connection timeout"
-          );
-
-
-          setMessage(
-            "⚠️ Partner found but video did not connect. Retrying..."
-          );
-
-
-          reconnectCurrentRoom();
-
-        }
-
-      },
-      25000
-    );
-
-}
-
-
-function stopConnectionTimer(){
-
-  if(connectionTimer){
-
-    clearTimeout(
-      connectionTimer
-    );
-
-    connectionTimer =
-      null;
-
-  }
-
-}
-
-
-/* =====================================================
-   METERED CONNECTION
-===================================================== */
-
-async function connectMetered(roomId){
-
-  if(connecting){
-
-    return;
-
-  }
-
-
-  connecting =
-    true;
-
-
   showConnecting(
-    true
+    false
   );
 
 
   setStatus(
-    "Connecting..."
+    "🟢 Connected"
   );
 
 
   setMessage(
-    "📡 Joining video room..."
+    "🎥 Video chat connected"
   );
 
 
-  try{
+  enableCallButtons(
+    true
+  );
 
-    /*
-       Make sure SDK is loaded.
-    */
+}
+
+
+/* =====================================================
+   METERED CONNECT
+===================================================== */
+
+async function connectMetered(roomId){
+
+  let timeoutId =
+    null;
+
+
+  try{
 
     if(
       !window.Metered ||
@@ -1552,14 +1261,29 @@ async function connectMetered(roomId){
     ){
 
       throw new Error(
-        "Metered SDK did not load. Refresh the page."
+        "Metered SDK did not load"
       );
 
     }
 
 
+    setStatus(
+      "Connecting..."
+    );
+
+
+    setMessage(
+      "📡 Joining video room..."
+    );
+
+
+    showConnecting(
+      true
+    );
+
+
     /*
-       Clear previous media.
+       Reset old streams.
     */
 
     localStream =
@@ -1567,7 +1291,6 @@ async function connectMetered(roomId){
 
     remoteStream =
       null;
-
 
     localVideo.srcObject =
       null;
@@ -1577,10 +1300,7 @@ async function connectMetered(roomId){
 
 
     /*
-       Create the room.
-
-       Both phones may call this simultaneously.
-       The backend handles an already-existing room.
+       Make sure the room exists.
     */
 
     await createMeteredRoom(
@@ -1589,43 +1309,84 @@ async function connectMetered(roomId){
 
 
     /*
-       Create a fresh Metered meeting.
+       IMPORTANT:
+       Metered room URL.
+    */
+
+    const roomURL =
+      METERED_DOMAIN +
+      "/" +
+      roomId;
+
+
+    console.log(
+      "Joining Metered room:",
+      roomURL
+    );
+
+
+    /*
+       Create Meeting.
     */
 
     meeting =
       new Metered.Meeting();
 
 
-    /* =================================================
+    /* -----------------------------------------------
        LOCAL TRACK
-    ================================================= */
+    ----------------------------------------------- */
 
     meeting.on(
       "localTrackStarted",
-      handleLocalTrack
+      item => {
+
+        console.log(
+          "LOCAL TRACK:",
+          item
+        );
+
+
+        handleLocalTrack(
+          item
+        );
+
+      }
     );
 
 
-    /* =================================================
+    /* -----------------------------------------------
        REMOTE TRACK
-    ================================================= */
+    ----------------------------------------------- */
 
     meeting.on(
       "remoteTrackStarted",
-      handleRemoteTrack
+      item => {
+
+        console.log(
+          "REMOTE TRACK:",
+          item
+        );
+
+
+        handleRemoteTrack(
+          item
+        );
+
+      }
     );
 
 
-    /* =================================================
+    /* -----------------------------------------------
        PARTICIPANT JOINED
-    ================================================= */
+    ----------------------------------------------- */
 
     meeting.on(
       "participantJoined",
       info => {
 
         console.log(
-          "👤 PARTICIPANT JOINED:",
+          "PARTICIPANT JOINED:",
           info
         );
 
@@ -1636,29 +1397,23 @@ async function connectMetered(roomId){
 
 
         setMessage(
-          "👤 Partner joined the room"
+          "🎥 Partner connected"
         );
-
-
-        /*
-           Do not stop the connection timer here.
-           We wait for actual remote video.
-        */
 
       }
     );
 
 
-    /* =================================================
+    /* -----------------------------------------------
        PARTICIPANT LEFT
-    ================================================= */
+    ----------------------------------------------- */
 
     meeting.on(
       "participantLeft",
       info => {
 
         console.log(
-          "👋 PARTICIPANT LEFT:",
+          "PARTICIPANT LEFT:",
           info
         );
 
@@ -1693,56 +1448,12 @@ async function connectMetered(roomId){
     );
 
 
-    /*
-       Some Metered versions can emit track stopped
-       events. Keep the UI safe if available.
-    */
+    /* -----------------------------------------------
+       JOIN WITH TIMEOUT
+    ----------------------------------------------- */
 
-    try{
-
-      meeting.on(
-        "remoteTrackStopped",
-        item => {
-
-          console.log(
-            "Remote track stopped:",
-            item
-          );
-
-        }
-      );
-
-    }
-    catch(error){
-
-      console.log(
-        "remoteTrackStopped listener unavailable"
-      );
-
-    }
-
-
-    /* =================================================
-       JOIN ROOM
-    ================================================= */
-
-    const roomURL =
-      "https://" +
-      METERED_DOMAIN +
-      "/" +
-      encodeURIComponent(
-        roomId
-      );
-
-
-    console.log(
-      "Joining Metered room:",
-      roomURL
-    );
-
-
-    const meetingInfo =
-      await meeting.join({
+    const joinPromise =
+      meeting.join({
 
         roomURL:
           roomURL,
@@ -1752,19 +1463,51 @@ async function connectMetered(roomId){
           userId.substring(
             0,
             8
-          ),
-
-        receiveVideoStreamType:
-          "only_individual",
-
-        receiveAudioStreamType:
-          "only_individual"
+          )
 
       });
 
 
+    const timeoutPromise =
+      new Promise(
+        (_,reject)=>{
+
+          timeoutId =
+            setTimeout(
+              ()=>{
+
+                reject(
+                  new Error(
+                    "Metered join timed out. Check METERED_DOMAIN and Metered room."
+                  )
+                );
+
+              },
+              25000
+            );
+
+        }
+      );
+
+
+    const meetingInfo =
+      await Promise.race([
+        joinPromise,
+        timeoutPromise
+      ]);
+
+
+    if(timeoutId){
+
+      clearTimeout(
+        timeoutId
+      );
+
+    }
+
+
     console.log(
-      "✅ METERED JOINED:",
+      "METERED JOINED:",
       meetingInfo
     );
 
@@ -1773,57 +1516,19 @@ async function connectMetered(roomId){
        Start camera.
     */
 
-    try{
-
-      await meeting.startVideo();
-
-    }
-    catch(error){
-
-      console.error(
-        "Camera start failed:",
-        error
-      );
-
-      throw new Error(
-        "Camera could not start. Please allow camera permission."
-      );
-
-    }
+    await meeting.startVideo();
 
 
     /*
        Start microphone.
     */
 
-    try{
-
-      await meeting.startAudio();
-
-    }
-    catch(error){
-
-      console.error(
-        "Microphone start failed:",
-        error
-      );
-
-      /*
-         Audio failure should not necessarily
-         kill the video call.
-      */
-
-      setMessage(
-        "🎥 Video connected. Microphone unavailable."
-      );
-
-    }
+    await meeting.startAudio();
 
 
-    enableCallButtons(
-      true
-    );
-
+    /*
+       Connected to room.
+    */
 
     setStatus(
       "🟢 Connected"
@@ -1831,11 +1536,18 @@ async function connectMetered(roomId){
 
 
     setMessage(
-      "🎥 Waiting for partner video..."
+      "🎥 Video room joined"
     );
 
 
-    startConnectionTimer();
+    enableCallButtons(
+      true
+    );
+
+
+    showConnecting(
+      false
+    );
 
 
     /*
@@ -1850,74 +1562,27 @@ async function connectMetered(roomId){
   }
   catch(error){
 
-    console.error(
-      "❌ METERED CONNECTION ERROR:",
-      error
-    );
+    if(timeoutId){
 
-
-    stopConnectionTimer();
-
-
-    /*
-       Clean failed meeting.
-    */
-
-    try{
-
-      if(meeting){
-
-        if(
-          typeof meeting.leaveMeeting ===
-          "function"
-        ){
-
-          await meeting.leaveMeeting();
-
-        }
-        else if(
-          typeof meeting.leave ===
-          "function"
-        ){
-
-          await meeting.leave();
-
-        }
-
-      }
-
-    }
-    catch(leaveError){
-
-      console.log(
-        "Failed meeting leave:",
-        leaveError
+      clearTimeout(
+        timeoutId
       );
 
     }
 
 
-    meeting =
-      null;
-
-
-    localStream =
-      null;
-
-    remoteStream =
-      null;
-
-
-    localVideo.srcObject =
-      null;
-
-    remoteVideo.srcObject =
-      null;
+    console.error(
+      "METERED CONNECTION ERROR:",
+      error
+    );
 
 
     showConnecting(
       false
     );
+
+
+    await leaveMeeting();
 
 
     enableCallButtons(
@@ -1931,77 +1596,18 @@ async function connectMetered(roomId){
 
 
     setMessage(
-      "❌ Video connection failed"
+      "❌ Connection failed"
     );
-
-
-    /*
-       Put user back into waiting state.
-    */
-
-    try{
-
-      await enterQueue();
-
-    }
-    catch(queueError){
-
-      console.log(
-        "Requeue error:",
-        queueError
-      );
-
-    }
 
 
     alert(
-      "Video connection failed.\n\n" +
+      "Video connection failed:\n\n" +
       error.message +
-      "\n\nPlease make sure Camera and Microphone permissions are allowed."
+      "\n\nRoom: " +
+      roomId
     );
 
   }
-  finally{
-
-    connecting =
-      false;
-
-  }
-
-}
-
-
-/* =====================================================
-   RECONNECT CURRENT ROOM
-===================================================== */
-
-async function reconnectCurrentRoom(){
-
-  if(
-    !currentRoom ||
-    connecting
-  ){
-
-    return;
-
-  }
-
-
-  await leaveMeeting();
-
-
-  await new Promise(
-    resolve =>
-      setTimeout(
-        resolve,
-        500
-      )
-  );
-
-
-  await connectMetered(
-    currentRoom
-  );
 
 }
 
@@ -2022,23 +1628,11 @@ async function start(){
   busy =
     true;
 
-
   startBtn.disabled =
     true;
 
 
   try{
-
-    /*
-       First request camera/mic permission.
-    */
-
-    await checkMediaPermission();
-
-
-    permissionBox.style.display =
-      "none";
-
 
     setStatus(
       "Online"
@@ -2050,33 +1644,11 @@ async function start(){
     );
 
 
-    /*
-       Clean any old queue entry.
-    */
-
-    await removeFromQueue();
-
-
-    /*
-       Enter Firebase waiting queue.
-    */
-
     await enterQueue();
 
 
-    /*
-       Listen before searching.
-
-       This is important because the other phone
-       can match us immediately.
-    */
-
     listenForMatch();
 
-
-    /*
-       Try to find someone already waiting.
-    */
 
     const found =
       await findPartner();
@@ -2155,10 +1727,6 @@ async function next(){
     true;
 
 
-  nextBtn.disabled =
-    true;
-
-
   try{
 
     setMessage(
@@ -2186,9 +1754,6 @@ async function next(){
       null;
 
 
-    await removeFromQueue();
-
-
     await enterQueue();
 
 
@@ -2212,11 +1777,6 @@ async function next(){
 
     }
     else{
-
-      setStatus(
-        "Searching..."
-      );
-
 
       setMessage(
         "🔎 Waiting for another partner..."
@@ -2252,39 +1812,14 @@ async function next(){
 
 
 /* =====================================================
-   LEAVE METERED MEETING
+   LEAVE MEETING
 ===================================================== */
 
 async function leaveMeeting(){
 
-  stopConnectionTimer();
+  try{
 
-
-  if(giftListener){
-
-    try{
-
-      giftListener();
-
-    }
-    catch(error){
-
-      console.log(
-        "Gift listener cleanup:",
-        error
-      );
-
-    }
-
-    giftListener =
-      null;
-
-  }
-
-
-  if(meeting){
-
-    try{
+    if(meeting){
 
       if(
         typeof meeting.leaveMeeting ===
@@ -2304,14 +1839,14 @@ async function leaveMeeting(){
       }
 
     }
-    catch(error){
 
-      console.log(
-        "Leave meeting error:",
-        error
-      );
+  }
+  catch(error){
 
-    }
+    console.log(
+      "Leave error:",
+      error
+    );
 
   }
 
@@ -2334,6 +1869,16 @@ async function leaveMeeting(){
     null;
 
 
+  if(giftListener){
+
+    giftListener();
+
+    giftListener =
+      null;
+
+  }
+
+
   muted =
     false;
 
@@ -2347,16 +1892,11 @@ async function leaveMeeting(){
   cameraBtn.innerText =
     "📷";
 
-
-  showConnecting(
-    false
-  );
-
 }
 
 
 /* =====================================================
-   END CALL
+   END
 ===================================================== */
 
 async function endCall(){
@@ -2381,7 +1921,25 @@ async function endCall(){
   }
 
 
-  await removeFromQueue();
+  try{
+
+    await deleteDoc(
+      doc(
+        db,
+        "matchQueue",
+        userId
+      )
+    );
+
+  }
+  catch(error){
+
+    console.log(
+      "Queue delete:",
+      error
+    );
+
+  }
 
 
   currentRoom =
@@ -2391,10 +1949,6 @@ async function endCall(){
     null;
 
 
-  connecting =
-    false;
-
-
   enableCallButtons(
     false
   );
@@ -2402,6 +1956,11 @@ async function endCall(){
 
   startBtn.disabled =
     false;
+
+
+  showConnecting(
+    false
+  );
 
 
   setStatus(
@@ -2436,10 +1995,8 @@ async function(){
 
       await meeting.stopAudio();
 
-
       muted =
         true;
-
 
       muteBtn.innerText =
         "🔇";
@@ -2449,10 +2006,8 @@ async function(){
 
       await meeting.startAudio();
 
-
       muted =
         false;
-
 
       muteBtn.innerText =
         "🎤";
@@ -2462,7 +2017,7 @@ async function(){
   }
   catch(error){
 
-    console.error(
+    console.log(
       "Mute error:",
       error
     );
@@ -2492,10 +2047,8 @@ async function(){
 
       await meeting.stopVideo();
 
-
       cameraOff =
         true;
-
 
       cameraBtn.innerText =
         "🚫";
@@ -2505,10 +2058,8 @@ async function(){
 
       await meeting.startVideo();
 
-
       cameraOff =
         false;
-
 
       cameraBtn.innerText =
         "📷";
@@ -2518,7 +2069,7 @@ async function(){
   }
   catch(error){
 
-    console.error(
+    console.log(
       "Camera error:",
       error
     );
@@ -2618,8 +2169,8 @@ document
           }
           catch(error){
 
-            console.error(
-              "Gift send error:",
+            console.log(
+              "Gift error:",
               error
             );
 
@@ -2661,7 +2212,7 @@ function showGift(gift){
 
 
 /* =====================================================
-   GIFT LISTENER
+   RECEIVE GIFTS
 ===================================================== */
 
 function listenForGifts(roomId){
@@ -2694,27 +2245,24 @@ function listenForGifts(roomId){
             change => {
 
               if(
-                change.type !==
+                change.type ===
                 "added"
               ){
 
-                return;
-
-              }
-
-
-              const data =
-                change.doc.data();
+                const data =
+                  change.doc.data();
 
 
-              if(
-                data.to ===
-                userId
-              ){
+                if(
+                  data.to ===
+                  userId
+                ){
 
-                showGift(
-                  data.gift
-                );
+                  showGift(
+                    data.gift
+                  );
+
+                }
 
               }
 
@@ -2726,7 +2274,7 @@ function listenForGifts(roomId){
       error => {
 
         console.log(
-          "Gift listener error:",
+          "Gift listener:",
           error
         );
 
@@ -2735,38 +2283,6 @@ function listenForGifts(roomId){
     );
 
 }
-
-
-/* =====================================================
-   PERMISSION BUTTON
-===================================================== */
-
-permissionBtn.onclick =
-async function(){
-
-  try{
-
-    await checkMediaPermission();
-
-
-    permissionBox.style.display =
-      "none";
-
-
-    setMessage(
-      "✅ Camera and microphone allowed. Press Start."
-    );
-
-  }
-  catch(error){
-
-    alert(
-      "Please allow Camera and Microphone permission in your browser settings."
-    );
-
-  }
-
-};
 
 
 /* =====================================================
@@ -2781,43 +2297,6 @@ nextBtn.onclick =
 
 endBtn.onclick =
   endCall;
-
-
-/* =====================================================
-   PAGE VISIBILITY
-===================================================== */
-
-document.addEventListener(
-  "visibilitychange",
-  ()=>{
-
-    /*
-       We intentionally do not disconnect
-       when the browser becomes hidden.
-
-       Mobile browsers can temporarily hide
-       the page while keeping the call alive.
-    */
-
-    if(
-      !document.hidden &&
-      remoteVideo.srcObject
-    ){
-
-      remoteVideo.play()
-        .catch(
-          ()=>{}
-        );
-
-      localVideo.play()
-        .catch(
-          ()=>{}
-        );
-
-    }
-
-  }
-);
 
 
 /* =====================================================
@@ -2836,9 +2315,10 @@ enableCallButtons(
   false
 );
 
-console.log(
-  "================================="
+showConnecting(
+  false
 );
+
 
 console.log(
   "✅ Ravi Chat initialized"
@@ -2852,10 +2332,6 @@ console.log(
 console.log(
   "Metered domain:",
   METERED_DOMAIN
-);
-
-console.log(
-  "================================="
 );
 
 </script>

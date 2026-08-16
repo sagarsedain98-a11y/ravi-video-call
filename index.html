@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ravi Random Video Chat</title>
 
 <style>
@@ -47,6 +47,10 @@ video{
   z-index:5;
 }
 
+#remoteAudio{
+  display:none;
+}
+
 .top{
   position:absolute;
   top:0;
@@ -66,7 +70,7 @@ video{
 }
 
 .status{
-  padding:7px 12px;
+  padding:8px 13px;
   border-radius:20px;
   background:#475569;
   font-size:12px;
@@ -136,9 +140,17 @@ button:disabled{
 
 <div id="app">
 
-  <video id="remoteVideo" autoplay playsinline></video>
+  <video id="remoteVideo"
+         autoplay
+         playsinline></video>
 
-  <video id="localVideo" autoplay muted playsinline></video>
+  <video id="localVideo"
+         autoplay
+         muted
+         playsinline></video>
+
+  <audio id="remoteAudio"
+         autoplay></audio>
 
   <div class="top">
     <div class="logo">📹 Ravi Chat</div>
@@ -186,10 +198,13 @@ button:disabled{
 
 <script type="module">
 
+/* =====================================================
+   FIREBASE
+===================================================== */
+
 import {
   initializeApp
-} from
-"https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
 import {
   getFirestore,
@@ -198,43 +213,39 @@ import {
   getDoc,
   deleteDoc,
   collection,
-  addDoc,
   onSnapshot,
   query,
   where,
   getDocs,
-  limit
-} from
-"https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+  limit,
+  runTransaction
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-
-/* =========================================
-   FIREBASE
-========================================= */
 
 const firebaseConfig = {
 
   apiKey:
-  "AIzaSyBclGWenPPhTCXetZ1rtj1KaRQ9dgvshas",
+    "AIzaSyBclGWenPPhTCXetZ1rtj1KaRQ9dgvshas",
 
   authDomain:
-  "ravi-video-call-fa15d.firebaseapp.com",
+    "ravi-video-call-fa15d.firebaseapp.com",
 
   projectId:
-  "ravi-video-call-fa15d",
+    "ravi-video-call-fa15d",
 
   storageBucket:
-  "ravi-video-call-fa15d.firebasestorage.app",
+    "ravi-video-call-fa15d.firebasestorage.app",
 
   messagingSenderId:
-  "1079442344769",
+    "1079442344769",
 
   appId:
-  "1:1079442344769:web:d7812efaf277c3f6d4efc0",
+    "1:1079442344769:web:d7812efaf277c3f6d4efc0",
 
   measurementId:
-  "G-69RY93XC91"
+    "G-69RY93XC91"
 };
+
 
 const firebaseApp =
   initializeApp(firebaseConfig);
@@ -243,36 +254,33 @@ const db =
   getFirestore(firebaseApp);
 
 
-/* =========================================
+/* =====================================================
    METERED
-========================================= */
+===================================================== */
 
 const METERED_DOMAIN =
   "ravi-video-call.metered.live";
 
 
 /*
- IMPORTANT:
+   IMPORTANT:
 
- Do NOT put your Metered SECRET KEY here.
-
- This example uses the public Metered SDK
- and a generated room name.
-
- Your Metered project must allow video
- meetings.
+   Secret Key यहाँ नराख्नुहोस्।
 */
 
 
-/* =========================================
+/* =====================================================
    ELEMENTS
-========================================= */
+===================================================== */
 
 const localVideo =
   document.getElementById("localVideo");
 
 const remoteVideo =
   document.getElementById("remoteVideo");
+
+const remoteAudio =
+  document.getElementById("remoteAudio");
 
 const startBtn =
   document.getElementById("startBtn");
@@ -296,24 +304,20 @@ const messageEl =
   document.getElementById("message");
 
 
-/* =========================================
-   STATE
-========================================= */
-
-let meeting = null;
+/* =====================================================
+   USER STATE
+===================================================== */
 
 let userId =
   crypto.randomUUID();
 
-let queueId = null;
+let meeting = null;
+
+let queueListener = null;
 
 let currentRoom = null;
 
 let currentPartner = null;
-
-let queueListener = null;
-
-let roomListener = null;
 
 let muted = false;
 
@@ -322,23 +326,26 @@ let cameraOff = false;
 let busy = false;
 
 
-/* =========================================
+/* =====================================================
    UI
-========================================= */
+===================================================== */
 
-function status(text){
+function setStatus(text){
 
   statusEl.innerText = text;
 
-  if(text.includes("Online") ||
-     text.includes("Connected")){
+  if(
+    text.includes("Online") ||
+    text.includes("Connected")
+  ){
 
     statusEl.style.background =
       "#16a34a";
 
   }else if(
     text.includes("Searching") ||
-    text.includes("Connecting")){
+    text.includes("Connecting")
+  ){
 
     statusEl.style.background =
       "#f59e0b";
@@ -347,21 +354,15 @@ function status(text){
 
     statusEl.style.background =
       "#475569";
-
   }
 }
 
 
-function message(text){
+function setMessage(text){
 
   messageEl.innerText = text;
-
 }
 
-
-/* =========================================
-   ENABLE / DISABLE
-========================================= */
 
 function setCallButtons(enabled){
 
@@ -376,230 +377,269 @@ function setCallButtons(enabled){
 
   cameraBtn.disabled =
     !enabled;
-
 }
 
 
-/* =========================================
+/* =====================================================
    RANDOM ROOM
-========================================= */
+===================================================== */
 
 function createRoomId(){
 
-  const random =
+  return (
+    "ravi-" +
     Math.random()
-    .toString(36)
-    .substring(2,10);
-
-  return "ravi-" + random;
-
+      .toString(36)
+      .substring(2,10)
+  );
 }
 
 
-/* =========================================
-   START LOCAL CAMERA
-========================================= */
-
-async function prepareCamera(){
-
-  const stream =
-    await navigator.mediaDevices
-    .getUserMedia({
-
-      video:true,
-      audio:true
-
-    });
-
-  localVideo.srcObject =
-    stream;
-
-  return stream;
-
-}
-
-
-/* =========================================
-   CREATE QUEUE ENTRY
-========================================= */
+/* =====================================================
+   QUEUE
+===================================================== */
 
 async function enterQueue(){
 
-  queueId = userId;
-
-  await setDoc(
-
-    doc(
-      db,
-      "matchQueue",
-      queueId
-    ),
-
-    {
-      userId:userId,
-      state:"waiting",
-      partner:null,
-      createdAt:Date.now()
-    }
-
-  );
-
-}
-
-
-/* =========================================
-   FIND WAITING USER
-========================================= */
-
-async function findPartner(){
-
-  const q =
-    query(
-
-      collection(
-        db,
-        "matchQueue"
-      ),
-
-      where(
-        "state",
-        "==",
-        "waiting"
-      ),
-
-      limit(10)
-
-    );
-
-  const snapshot =
-    await getDocs(q);
-
-  for(
-    const item of snapshot.docs
-  ){
-
-    const data =
-      item.data();
-
-    if(
-      data.userId === userId
-    ){
-      continue;
-    }
-
-    /*
-      Claim the partner.
-
-      Re-read the document first so that
-      the other phone has not already been
-      matched.
-    */
-
-    const partnerRef =
-      doc(
-        db,
-        "matchQueue",
-        data.userId
-      );
-
-    const latest =
-      await getDoc(
-        partnerRef
-      );
-
-    if(!latest.exists()){
-      continue;
-    }
-
-    const latestData =
-      latest.data();
-
-    if(
-      latestData.state !==
-      "waiting"
-    ){
-      continue;
-    }
-
-    const roomId =
-      createRoomId();
-
-    currentRoom =
-      roomId;
-
-    currentPartner =
-      data.userId;
-
-
-    await setDoc(
-      partnerRef,
-
-      {
-        ...latestData,
-        state:"matched",
-        partner:userId,
-        roomId:roomId
-      }
-
-    );
-
-
-    await setDoc(
-
-      doc(
-        db,
-        "matchQueue",
-        userId
-      ),
-
-      {
-        userId:userId,
-        state:"matched",
-        partner:data.userId,
-        roomId:roomId,
-        createdAt:Date.now()
-      }
-
-    );
-
-
-    return true;
-
-  }
-
-  return false;
-
-}
-
-
-/* =========================================
-   LISTEN FOR MATCH
-========================================= */
-
-function listenForMatch(){
-
-  if(queueListener){
-    queueListener();
-  }
-
-  const ref =
+  const myRef =
     doc(
       db,
       "matchQueue",
       userId
     );
 
+  await setDoc(
+    myRef,
+    {
+      userId:userId,
+      state:"waiting",
+      partner:null,
+      roomId:null,
+      createdAt:Date.now()
+    },
+    {
+      merge:true
+    }
+  );
+}
+
+
+/* =====================================================
+   FIND PARTNER SAFELY
+===================================================== */
+
+async function findPartner(){
+
+  try{
+
+    const q =
+      query(
+        collection(
+          db,
+          "matchQueue"
+        ),
+        where(
+          "state",
+          "==",
+          "waiting"
+        ),
+        limit(10)
+      );
+
+    const snapshot =
+      await getDocs(q);
+
+
+    for(
+      const candidate of snapshot.docs
+    ){
+
+      const candidateData =
+        candidate.data();
+
+      const partnerId =
+        candidateData.userId;
+
+
+      if(
+        partnerId === userId
+      ){
+        continue;
+      }
+
+
+      const myRef =
+        doc(
+          db,
+          "matchQueue",
+          userId
+        );
+
+      const partnerRef =
+        doc(
+          db,
+          "matchQueue",
+          partnerId
+        );
+
+
+      const roomId =
+        createRoomId();
+
+
+      /*
+         TRANSACTION
+
+         यसले दुई फोनले एउटै व्यक्तिलाई
+         simultaneously claim गर्ने समस्या रोक्छ।
+      */
+
+      const matched =
+        await runTransaction(
+          db,
+          async(transaction)=>{
+
+            const mySnap =
+              await transaction.get(
+                myRef
+              );
+
+            const partnerSnap =
+              await transaction.get(
+                partnerRef
+              );
+
+
+            if(
+              !mySnap.exists() ||
+              !partnerSnap.exists()
+            ){
+
+              return false;
+            }
+
+
+            const myData =
+              mySnap.data();
+
+            const partnerData =
+              partnerSnap.data();
+
+
+            if(
+              myData.state !==
+              "waiting"
+            ){
+
+              return false;
+            }
+
+
+            if(
+              partnerData.state !==
+              "waiting"
+            ){
+
+              return false;
+            }
+
+
+            /*
+               BOTH users receive
+               EXACT SAME room ID.
+            */
+
+            transaction.update(
+              myRef,
+              {
+                state:"matched",
+                partner:partnerId,
+                roomId:roomId
+              }
+            );
+
+
+            transaction.update(
+              partnerRef,
+              {
+                state:"matched",
+                partner:userId,
+                roomId:roomId
+              }
+            );
+
+
+            return true;
+          }
+        );
+
+
+      if(matched){
+
+        currentRoom =
+          roomId;
+
+        currentPartner =
+          partnerId;
+
+        return true;
+      }
+
+    }
+
+  }catch(error){
+
+    console.error(
+      "Matching error:",
+      error
+    );
+
+  }
+
+
+  return false;
+}
+
+
+/* =====================================================
+   LISTEN FOR MATCH
+===================================================== */
+
+function listenForMatch(){
+
+  if(queueListener){
+
+    queueListener();
+
+    queueListener =
+      null;
+  }
+
+
+  const myRef =
+    doc(
+      db,
+      "matchQueue",
+      userId
+    );
+
+
   queueListener =
     onSnapshot(
-      ref,
-      async snapshot => {
+      myRef,
+      async(snapshot)=>{
 
-        if(!snapshot.exists()){
+        if(
+          !snapshot.exists()
+        ){
+
           return;
         }
 
+
         const data =
           snapshot.data();
+
 
         if(
           data.state ===
@@ -607,54 +647,69 @@ function listenForMatch(){
           data.roomId
         ){
 
+          /*
+             Avoid joining same room twice.
+          */
+
+          if(
+            currentRoom ===
+            data.roomId &&
+            meeting
+          ){
+
+            return;
+          }
+
+
           currentRoom =
             data.roomId;
 
           currentPartner =
             data.partner;
 
-          message(
+
+          setMessage(
             "🎉 Partner found! Connecting..."
           );
 
-          status(
+          setStatus(
             "Connecting..."
           );
 
-          await joinMeteredRoom(
-            currentRoom
-          );
 
+          await joinMeteredRoom(
+            data.roomId
+          );
         }
 
       }
     );
-
 }
 
 
-/* =========================================
-   JOIN METERED ROOM
-========================================= */
+/* =====================================================
+   METERED ROOM
+===================================================== */
 
 async function joinMeteredRoom(
   roomId
 ){
 
-  if(busy){
+  if(meeting){
+
     return;
   }
 
-  busy = true;
 
   try{
 
-    if(!window.Metered){
+    if(
+      !window.Metered
+    ){
 
       throw new Error(
         "Metered SDK did not load."
       );
-
     }
 
 
@@ -662,35 +717,24 @@ async function joinMeteredRoom(
       new Metered.Meeting();
 
 
-    const roomURL =
-      METERED_DOMAIN +
-      "/" +
-      roomId;
+    /*
+       IMPORTANT:
+
+       Event listeners BEFORE join().
+    */
 
 
-    const meetingInfo =
-      await meeting.join({
-
-        roomURL:
-          roomURL,
-
-        name:
-          "Ravi User"
-
-      });
-
-
-    console.log(
-      "Meeting joined:",
-      meetingInfo
-    );
-
-
-    /* Local video */
+    /* LOCAL VIDEO */
 
     meeting.on(
       "localTrackStarted",
       function(item){
+
+        console.log(
+          "Local track:",
+          item
+        );
+
 
         if(
           item.type ===
@@ -702,19 +746,21 @@ async function joinMeteredRoom(
               item.track
             ]);
 
+
           localVideo.srcObject =
             stream;
 
-          localVideo.play()
-          .catch(()=>{});
 
+          localVideo
+            .play()
+            .catch(()=>{});
         }
 
       }
     );
 
 
-    /* Remote video */
+    /* REMOTE TRACK */
 
     meeting.on(
       "remoteTrackStarted",
@@ -725,39 +771,72 @@ async function joinMeteredRoom(
           item
         );
 
+
+        const stream =
+          new MediaStream([
+            item.track
+          ]);
+
+
         if(
           item.type ===
           "video"
         ){
 
-          const stream =
-            new MediaStream([
-              item.track
-            ]);
-
           remoteVideo.srcObject =
             stream;
 
-          remoteVideo.play()
-          .catch(()=>{});
 
-          status(
+          remoteVideo
+            .play()
+            .catch(()=>{});
+
+
+          setStatus(
             "🟢 Connected"
           );
 
-          message(
-            "🎥 You are now connected"
+          setMessage(
+            "🎥 Video chat connected"
           );
 
           setCallButtons(
             true
           );
+        }
 
+
+        /*
+           REMOTE AUDIO
+
+           Audio track अलगै audio element
+           मा राखिन्छ।
+        */
+
+        if(
+          item.type ===
+          "audio"
+        ){
+
+          remoteAudio.srcObject =
+            stream;
+
+
+          remoteAudio
+            .play()
+            .catch(error=>{
+              console.log(
+                "Audio autoplay:",
+                error
+              );
+            });
         }
 
       }
     );
 
+
+    /* PARTICIPANT JOINED */
 
     meeting.on(
       "participantJoined",
@@ -768,21 +847,23 @@ async function joinMeteredRoom(
           info
         );
 
-        status(
+
+        setStatus(
           "🟢 Connected"
         );
 
-        message(
+        setMessage(
           "🎥 Video chat connected"
         );
 
         setCallButtons(
           true
         );
-
       }
     );
 
+
+    /* PARTICIPANT LEFT */
 
     meeting.on(
       "participantLeft",
@@ -793,20 +874,51 @@ async function joinMeteredRoom(
           info
         );
 
-        message(
-          "👋 Partner left. Press Next."
-        );
 
-        status(
+        remoteVideo.srcObject =
+          null;
+
+        remoteAudio.srcObject =
+          null;
+
+
+        setStatus(
           "Online"
         );
 
+        setMessage(
+          "👋 Partner left. Press Next."
+        );
       }
     );
 
 
     /*
-      Start camera + microphone.
+       JOIN SAME ROOM
+       ON BOTH PHONES
+    */
+
+    const roomURL =
+      METERED_DOMAIN +
+      "/" +
+      roomId;
+
+
+    const meetingInfo =
+      await meeting.join({
+        roomURL:roomURL,
+        name:"Ravi User"
+      });
+
+
+    console.log(
+      "Meeting joined:",
+      meetingInfo
+    );
+
+
+    /*
+       START CAMERA
     */
 
     try{
@@ -815,13 +927,16 @@ async function joinMeteredRoom(
 
     }catch(error){
 
-      console.log(
-        "startVideo error:",
+      console.error(
+        "Camera error:",
         error
       );
-
     }
 
+
+    /*
+       START MICROPHONE
+    */
 
     try{
 
@@ -829,11 +944,10 @@ async function joinMeteredRoom(
 
     }catch(error){
 
-      console.log(
-        "startAudio error:",
+      console.error(
+        "Microphone error:",
         error
       );
-
     }
 
 
@@ -841,74 +955,94 @@ async function joinMeteredRoom(
       true
     );
 
+
   }catch(error){
 
     console.error(
+      "Metered connection error:",
       error
     );
 
-    message(
-      "❌ Connection failed"
-    );
 
-    status(
+    meeting =
+      null;
+
+
+    setStatus(
       "Offline"
     );
 
-    alert(
-      "Video connection error: " +
-      error.message
+
+    setMessage(
+      "❌ Connection failed"
     );
 
+
+    alert(
+      "Video connection error:\n" +
+      error.message
+    );
   }
-
-  busy = false;
-
 }
 
 
-/* =========================================
-   START RANDOM CHAT
-========================================= */
+/* =====================================================
+   START
+===================================================== */
 
 async function startRandomChat(){
 
   if(busy){
+
     return;
   }
 
+
+  busy =
+    true;
+
+
+  startBtn.disabled =
+    true;
+
+
   try{
 
-    busy = true;
-
-    startBtn.disabled =
-      true;
-
-    status(
+    setStatus(
       "🟢 Online"
     );
 
-    message(
-      "🎥 Opening camera..."
+
+    setMessage(
+      "🎥 Starting camera and microphone..."
     );
 
 
-    await prepareCamera();
+    /*
+       Camera permission will be requested
+       by Metered.
+    */
 
 
-    message(
+    setMessage(
       "🔎 Finding a random partner..."
     );
 
-    status(
+
+    setStatus(
       "Searching..."
     );
 
 
     await enterQueue();
 
+
     listenForMatch();
 
+
+    /*
+       First try to find somebody.
+    */
 
     const found =
       await findPartner();
@@ -916,14 +1050,13 @@ async function startRandomChat(){
 
     if(!found){
 
-      message(
+      setMessage(
         "🔎 Waiting for a random partner..."
       );
 
-      status(
+      setStatus(
         "Searching..."
       );
-
     }
 
 
@@ -933,71 +1066,37 @@ async function startRandomChat(){
       error
     );
 
-    alert(
-      "Camera/Microphone error: " +
+
+    console.log(
+      "Start error:",
       error.message
     );
 
-    status(
+
+    setStatus(
       "Offline"
     );
+
+
+    setMessage(
+      "❌ Could not start"
+    );
+
 
     startBtn.disabled =
       false;
 
   }
 
-  busy = false;
 
+  busy =
+    false;
 }
 
 
-/* =========================================
-   NEXT
-========================================= */
-
-async function nextPartner(){
-
-  message(
-    "⏭ Finding another partner..."
-  );
-
-  status(
-    "Searching..."
-  );
-
-
-  await leaveCurrentMeeting();
-
-
-  currentRoom =
-    null;
-
-  currentPartner =
-    null;
-
-
-  await enterQueue();
-
-
-  const found =
-    await findPartner();
-
-
-  if(!found){
-
-    message(
-      "🔎 Waiting for another random partner..."
-    );
-
-  }
-
-}
-
-
-/* =========================================
-   LEAVE CURRENT MEETING
-========================================= */
+/* =====================================================
+   LEAVE METERED
+===================================================== */
 
 async function leaveCurrentMeeting(){
 
@@ -1018,9 +1117,7 @@ async function leaveCurrentMeeting(){
       ){
 
         await meeting.leave();
-
       }
-
     }
 
   }catch(error){
@@ -1029,8 +1126,8 @@ async function leaveCurrentMeeting(){
       "Leave error:",
       error
     );
-
   }
+
 
   meeting =
     null;
@@ -1039,17 +1136,96 @@ async function leaveCurrentMeeting(){
   remoteVideo.srcObject =
     null;
 
-
-  /*
-    Keep camera available for Next.
-  */
-
+  remoteAudio.srcObject =
+    null;
 }
 
 
-/* =========================================
+/* =====================================================
+   NEXT
+===================================================== */
+
+async function nextPartner(){
+
+  if(busy){
+
+    return;
+  }
+
+
+  busy =
+    true;
+
+
+  try{
+
+    setMessage(
+      "⏭ Finding another partner..."
+    );
+
+    setStatus(
+      "Searching..."
+    );
+
+
+    await leaveCurrentMeeting();
+
+
+    currentRoom =
+      null;
+
+    currentPartner =
+      null;
+
+
+    /*
+       Put current user back into queue.
+    */
+
+    await enterQueue();
+
+
+    listenForMatch();
+
+
+    const found =
+      await findPartner();
+
+
+    if(!found){
+
+      setMessage(
+        "🔎 Waiting for another random partner..."
+      );
+
+      setStatus(
+        "Searching..."
+      );
+    }
+
+
+  }catch(error){
+
+    console.error(
+      "Next error:",
+      error
+    );
+
+    setMessage(
+      "❌ Could not find another partner"
+    );
+
+  }
+
+
+  busy =
+    false;
+}
+
+
+/* =====================================================
    END
-========================================= */
+===================================================== */
 
 async function endCall(){
 
@@ -1062,7 +1238,6 @@ async function endCall(){
 
     queueListener =
       null;
-
   }
 
 
@@ -1079,30 +1254,10 @@ async function endCall(){
   }catch(error){
 
     console.log(
+      "Queue delete error:",
       error
     );
-
   }
-
-
-  if(localVideo.srcObject){
-
-    localVideo
-    .srcObject
-    .getTracks()
-    .forEach(
-      track =>
-        track.stop()
-    );
-
-  }
-
-
-  localVideo.srcObject =
-    null;
-
-  remoteVideo.srcObject =
-    null;
 
 
   currentRoom =
@@ -1110,6 +1265,19 @@ async function endCall(){
 
   currentPartner =
     null;
+
+  muted =
+    false;
+
+  cameraOff =
+    false;
+
+
+  muteBtn.innerText =
+    "🎤";
+
+  cameraBtn.innerText =
+    "📷";
 
 
   setCallButtons(
@@ -1121,156 +1289,164 @@ async function endCall(){
     false;
 
 
-  status(
+  setStatus(
     "Offline"
   );
 
-  message(
+
+  setMessage(
     "Press Start to begin"
   );
-
 }
 
 
-/* =========================================
+/* =====================================================
    MUTE
-========================================= */
+===================================================== */
 
 muteBtn.onclick =
-async()=>{
+  async function(){
 
-  if(!meeting){
-    return;
-  }
+    if(!meeting){
 
-  try{
-
-    if(!muted){
-
-      if(
-        typeof meeting.stopAudio ===
-        "function"
-      ){
-
-        await meeting.stopAudio();
-
-      }
-
-      muted = true;
-
-      muteBtn.innerText =
-        "🔇";
-
-    }else{
-
-      if(
-        typeof meeting.startAudio ===
-        "function"
-      ){
-
-        await meeting.startAudio();
-
-      }
-
-      muted = false;
-
-      muteBtn.innerText =
-        "🎤";
-
+      return;
     }
 
-  }catch(error){
 
-    console.log(
-      error
-    );
+    try{
 
-  }
+      if(!muted){
 
-};
+        if(
+          typeof meeting.stopAudio ===
+          "function"
+        ){
+
+          await meeting.stopAudio();
+        }
 
 
-/* =========================================
+        muted =
+          true;
+
+
+        muteBtn.innerText =
+          "🔇";
+
+      }else{
+
+        if(
+          typeof meeting.startAudio ===
+          "function"
+        ){
+
+          await meeting.startAudio();
+        }
+
+
+        muted =
+          false;
+
+
+        muteBtn.innerText =
+          "🎤";
+      }
+
+    }catch(error){
+
+      console.log(
+        "Mute error:",
+        error
+      );
+    }
+  };
+
+
+/* =====================================================
    CAMERA
-========================================= */
+===================================================== */
 
 cameraBtn.onclick =
-async()=>{
+  async function(){
 
-  if(!meeting){
-    return;
-  }
+    if(!meeting){
 
-  try{
-
-    if(!cameraOff){
-
-      if(
-        typeof meeting.stopVideo ===
-        "function"
-      ){
-
-        await meeting.stopVideo();
-
-      }
-
-      cameraOff = true;
-
-      cameraBtn.innerText =
-        "🚫";
-
-    }else{
-
-      if(
-        typeof meeting.startVideo ===
-        "function"
-      ){
-
-        await meeting.startVideo();
-
-      }
-
-      cameraOff = false;
-
-      cameraBtn.innerText =
-        "📷";
-
+      return;
     }
 
-  }catch(error){
 
-    console.log(
-      error
-    );
+    try{
 
-  }
+      if(!cameraOff){
 
-};
+        if(
+          typeof meeting.stopVideo ===
+          "function"
+        ){
+
+          await meeting.stopVideo();
+        }
 
 
-/* =========================================
+        cameraOff =
+          true;
+
+
+        cameraBtn.innerText =
+          "🚫";
+
+      }else{
+
+        if(
+          typeof meeting.startVideo ===
+          "function"
+        ){
+
+          await meeting.startVideo();
+        }
+
+
+        cameraOff =
+          false;
+
+
+        cameraBtn.innerText =
+          "📷";
+      }
+
+    }catch(error){
+
+      console.log(
+        "Camera error:",
+        error
+      );
+    }
+  };
+
+
+/* =====================================================
    BUTTONS
-========================================= */
+===================================================== */
 
 startBtn.onclick =
-startRandomChat;
+  startRandomChat;
 
 nextBtn.onclick =
-nextPartner;
+  nextPartner;
 
 endBtn.onclick =
-endCall;
+  endCall;
 
 
-/* =========================================
+/* =====================================================
    INITIAL
-========================================= */
+===================================================== */
 
-status(
+setStatus(
   "Offline"
 );
 
-message(
+setMessage(
   "Press Start to begin"
 );
 

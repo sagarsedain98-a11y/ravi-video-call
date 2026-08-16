@@ -19,37 +19,56 @@ export default async function handler(req, res) {
 
     if (!domain || !secretKey) {
       return res.status(500).json({
-        error: "Metered environment variables are missing"
+        error: "METERED_DOMAIN or METERED_SECRET_KEY is missing"
       });
     }
 
-    const response = await fetch(
-      `https://${domain}/api/v1/room`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          roomName: roomName,
-          secretKey: secretKey
-        })
-      }
-    );
+    const url =
+      `https://${domain}/api/v1/room?secretKey=${encodeURIComponent(secretKey)}`;
 
-    const data = await response.json();
+    const response = await fetch(url, {
+      method: "POST",
+
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        roomName: roomName,
+        privacy: "public"
+      })
+    });
+
+    const text = await response.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = {
+        error: text
+      };
+    }
 
     if (!response.ok) {
-      return res.status(response.status).json(data);
+      console.error("Metered API error:", data);
+
+      return res.status(response.status).json({
+        error: "Metered room creation failed",
+        details: data
+      });
     }
 
     return res.status(200).json(data);
 
   } catch (error) {
-    console.error(error);
+    console.error("Server error:", error);
 
     return res.status(500).json({
-      error: "Failed to create Metered room"
+      error: "Failed to create Metered room",
+      details: error.message
     });
   }
 }

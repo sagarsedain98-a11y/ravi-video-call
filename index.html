@@ -665,11 +665,14 @@ async function createMeteredRoom(roomId){
 
 /* =====================================================
    METERED CONNECT
-===================================================== */
+===================================================== 
 
-async function connectMetered(roomId){
+  async function connectMetered(roomId){
 
   try{
+
+    status("Connecting...");
+    message("📡 Joining video room...");
 
     if(!window.Metered){
 
@@ -678,42 +681,247 @@ async function connectMetered(roomId){
       );
     }
 
+    /*
+      Create room from backend.
+      Secret key is NOT exposed here.
+    */
+    const roomResult =
+      await createMeteredRoom(roomId);
+
+    console.log(
+      "Metered room:",
+      roomResult
+    );
+
 
     /*
-       The backend creates the room.
+      Create Metered meeting
     */
-
-    await createMeteredRoom(roomId);
-
-
     meeting =
       new Metered.Meeting();
 
 
-    /* LOCAL TRACK */
-
+    /*
+      LOCAL VIDEO
+    */
     meeting.on(
       "localTrackStarted",
-      item=>{
+      async(item)=>{
+
+        console.log(
+          "localTrackStarted:",
+          item
+        );
 
         if(item.type === "video"){
 
-          localVideo.srcObject =
-            new MediaStream([
-              item.track
-            ]);
+          const stream =
+            new MediaStream();
 
-          localVideo
-            .play()
-            .catch(()=>{});
+          stream.addTrack(
+            item.track
+          );
+
+          localVideo.srcObject =
+            stream;
+
+          try{
+            await localVideo.play();
+          }catch(error){
+            console.log(
+              "Local video play:",
+              error
+            );
+          }
         }
       }
     );
 
 
-    /* REMOTE TRACK */
-
+    /*
+      REMOTE VIDEO / AUDIO
+    */
     meeting.on(
+      "remoteTrackStarted",
+      async(item)=>{
+
+        console.log(
+          "remoteTrackStarted:",
+          item
+        );
+
+        if(item.type === "video"){
+
+          const stream =
+            new MediaStream();
+
+          stream.addTrack(
+            item.track
+          );
+
+          remoteVideo.srcObject =
+            stream;
+
+          try{
+            await remoteVideo.play();
+          }catch(error){
+            console.log(
+              "Remote video play:",
+              error
+            );
+          }
+
+          status(
+            "🟢 Connected"
+          );
+
+          message(
+            "🎥 Video chat connected"
+          );
+
+          callButtons(true);
+        }
+      }
+    );
+
+
+    /*
+      PARTICIPANT JOINED
+    */
+    meeting.on(
+      "participantJoined",
+      info=>{
+
+        console.log(
+          "👤 Participant joined:",
+          info
+        );
+
+        status(
+          "🟢 Connected"
+        );
+
+        message(
+          "🎥 Partner connected"
+        );
+
+        callButtons(true);
+      }
+    );
+
+
+    /*
+      PARTICIPANT LEFT
+    */
+    meeting.on(
+      "participantLeft",
+      info=>{
+
+        console.log(
+          "👋 Participant left:",
+          info
+        );
+
+        remoteVideo.srcObject =
+          null;
+
+        status("Online");
+
+        message(
+          "👋 Partner left. Press Next."
+        );
+      }
+    );
+
+
+    /*
+      JOIN METERED ROOM
+    */
+    const meetingInfo =
+      await meeting.join({
+
+        roomURL:
+          "ravi-video-call.metered.live/" +
+          roomId,
+
+        name:
+          "Ravi-" +
+          userId.substring(0,6)
+      });
+
+
+    console.log(
+      "✅ Metered joined:",
+      meetingInfo
+    );
+
+
+    /*
+      START CAMERA
+    */
+    await meeting.startVideo();
+
+
+    /*
+      START MICROPHONE
+    */
+    await meeting.startAudio();
+
+
+    /*
+      Enable controls
+    */
+    callButtons(true);
+
+    status(
+      "🟢 Connected"
+    );
+
+    message(
+      "🎥 Video chat connected"
+    );
+
+
+    /*
+      Listen for gifts
+    */
+    listenForGifts(roomId);
+
+
+  }catch(error){
+
+    console.error(
+      "❌ Metered connection error:",
+      error
+    );
+
+    meeting =
+      null;
+
+    remoteVideo.srcObject =
+      null;
+
+    localVideo.srcObject =
+      null;
+
+    callButtons(false);
+
+    status(
+      "Offline"
+    );
+
+    message(
+      "❌ Connection failed"
+    );
+
+    alert(
+      "Video connection failed:\n\n" +
+      error.message
+    );
+  }
+}
+
+  */REMOTE TRACK */  meeting.on(
       "remoteTrackStarted",
       item=>{
 

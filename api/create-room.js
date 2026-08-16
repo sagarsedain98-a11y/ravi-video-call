@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Only POST is allowed
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Method not allowed"
@@ -9,42 +8,29 @@ export default async function handler(req, res) {
   try {
     const { roomName } = req.body || {};
 
-    // Check room name
     if (!roomName) {
       return res.status(400).json({
         error: "roomName is required"
       });
     }
 
-    // Get Vercel Environment Variables
     const domain = process.env.METERED_DOMAIN;
     const secretKey = process.env.METERED_SECRET_KEY;
 
-    if (!domain) {
+    if (!domain || !secretKey) {
       return res.status(500).json({
-        error: "METERED_DOMAIN is missing"
+        error: "METERED_DOMAIN or METERED_SECRET_KEY is missing"
       });
     }
 
-    if (!secretKey) {
-      return res.status(500).json({
-        error: "METERED_SECRET_KEY is missing"
-      });
-    }
-
-    // Metered API
     const url =
-      `https://${domain}/api/v1/room?secretKey=${encodeURIComponent(
-        secretKey
-      )}`;
-
-    console.log("Creating Metered room:", roomName);
+      `https://${domain}/api/v1/room?secretKey=${encodeURIComponent(secretKey)}`;
 
     const response = await fetch(url, {
       method: "POST",
 
       headers: {
-        Accept: "application/json",
+        "Accept": "application/json",
         "Content-Type": "application/json"
       },
 
@@ -66,15 +52,30 @@ export default async function handler(req, res) {
       };
     }
 
-    console.log("Metered response status:", response.status);
-    console.log("Metered response:", data);
+    /*
+      IMPORTANT:
+      दुई जना user ले एउटै room create गर्न खोज्दा
+      Metered ले "already exists" / 409 दिन सक्छ।
 
-    // If room already exists, that's okay.
-    // The existing room can still be joined.
+      Room पहिले नै बनेको छ भने त्यसलाई error नमान्ने।
+    */
     if (
-      !response.ok &&
-      response.status !== 409
+      response.status === 409 ||
+      (
+        typeof data?.error === "string" &&
+        data.error.toLowerCase().includes("already")
+      )
     ) {
+      return res.status(200).json({
+        success: true,
+        roomName: roomName,
+        alreadyExists: true
+      });
+    }
+
+    if (!response.ok) {
+      console.error("Metered API error:", data);
+
       return res.status(response.status).json({
         error: "Metered room creation failed",
         details: data
@@ -84,11 +85,12 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       roomName: roomName,
+      alreadyExists: false,
       data: data
     });
 
   } catch (error) {
-    console.error("Create room error:", error);
+    console.error("Server error:", error);
 
     return res.status(500).json({
       error: "Failed to create Metered room",
